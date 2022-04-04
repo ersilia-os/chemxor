@@ -1,0 +1,19 @@
+iris_data:
+  type: pandas.CSVDataSet
+  filepath: data/01_raw/iris/iris.csv
+
+example_train_x:
+  type: pandas.CSVDataSet
+  filepath: data/02_intermediate/iris/example_train_x.csv
+
+example_test_x:
+  type: pandas.CSVDataSet
+  filepath: data/02_intermediate/iris/example_test_x.csv
+
+example_train_y:
+  type: pandas.CSVDataSet
+  filepath: data/02_intermediate/iris/example_train_y.csv
+
+example_test_y:
+  type: pandas.CSVDataSet
+  filepath: data/02_intermediate/iris/example_test_y.csv

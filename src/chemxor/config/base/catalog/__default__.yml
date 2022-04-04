@@ -1,0 +1,4 @@
+my_message:
+  type: MemoryDataSet
+my_salutation:
+  type: MemoryDataSet

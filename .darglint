@@ -1,0 +1,4 @@
+[darglint]
+strictness = short
+per-file-ignores = 
+    chemxor/cli:DAR101
