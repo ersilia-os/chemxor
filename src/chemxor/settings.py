@@ -27,4 +27,4 @@ SESSION_STORE_ARGS = {"path": str(Path(__file__).parents[2] / "data")}
 # CONTEXT_CLASS = KedroContext
 
 # Define the configuration folder. Defaults to `conf`
-CONF_ROOT = "src/chemxor/config"
+CONF_SOURCE = "src/chemxor/config"

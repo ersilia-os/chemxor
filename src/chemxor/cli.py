@@ -1,14 +1,14 @@
-"""February CLI."""
+"""Chemxor CLI."""
 
 from typing import Any
 
 import click
-from kedro.framework.session import KedroSession
+from kedro.framework.project import pipelines
 
 
-@click.group(name="February")
+@click.group(name="Chemxor")
 def cli() -> None:
-    """Kedro plugin for printing the pipeline in JSON format."""
+    """Chemxor CLI."""
     pass
 
 
@@ -16,7 +16,5 @@ def cli() -> None:
 @click.pass_obj
 def hello(metadata: Any) -> None:
     """Display the pipeline in JSON format."""
-    print("hello from february.")
-    session = KedroSession.create(metadata.package_name)
-    context = session.load_context()
-    print(context.pipeline.to_json())
+    print("hello from chemxor.")
+    print(f"{[pipeline for pipeline in pipelines]}")
