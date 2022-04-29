@@ -1,0 +1,4 @@
+osm_data_module:
+  type: MemoryDataSet
+cryptic_sage_model:
+  type: MemoryDataSet
