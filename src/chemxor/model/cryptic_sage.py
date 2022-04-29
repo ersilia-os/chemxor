@@ -50,10 +50,36 @@ class CrypticSage(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        loss = F.cross_entropy(output, y)
+        loss = F.mse_loss(output, y)
         # Logging to TensorBoard by default
         self.log("train_loss", loss)
         return loss
+
+    def validation_step(self: "CrypticSage", batch: Any, batch_idx: Any) -> None:
+        """Validation step.
+
+        Args:
+            batch (Any): input batch
+            batch_idx (Any): batch index
+        """
+        x, y = batch
+        output = self(x)
+        loss = F.mse_loss(output, y)
+        # Logging to TensorBoard by default
+        self.log("validation_loss", loss)
+
+    def test_step(self: "CrypticSage", batch: Any, batch_idx: Any) -> None:
+        """Test step.
+
+        Args:
+            batch (Any): input batch
+            batch_idx (Any): batch index
+        """
+        x, y = batch
+        output = self(x)
+        loss = F.mse_loss(output, y)
+        # Logging to TensorBoard by default
+        self.log("test_loss", loss)
 
     def configure_optimizers(self: "CrypticSage") -> Optimizer:
         """Configure optimizer."""
