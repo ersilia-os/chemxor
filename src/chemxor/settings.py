@@ -3,10 +3,8 @@ from pathlib import Path
 
 from kedro_viz.integrations.kedro.sqlite_store import SQLiteStore
 
-from chemxor.hooks import ProjectHooks
-
 # Instantiate and list your project hooks here
-HOOKS = (ProjectHooks(),)
+# HOOKS = (ProjectHooks(),)
 
 # List the installed plugins for which to disable auto-registry
 # DISABLE_HOOKS_FOR_PLUGINS = ("kedro-viz",)
