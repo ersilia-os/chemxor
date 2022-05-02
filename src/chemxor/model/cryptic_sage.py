@@ -50,7 +50,7 @@ class CrypticSage(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        loss = F.mse_loss(output, y)
+        loss = F.cross_entropy(output, y)
         # Logging to TensorBoard by default
         self.log("train_loss", loss)
         return loss
@@ -64,7 +64,7 @@ class CrypticSage(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        loss = F.mse_loss(output, y)
+        loss = F.cross_entropy(output, y)
         # Logging to TensorBoard by default
         self.log("validation_loss", loss)
 
@@ -77,7 +77,7 @@ class CrypticSage(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        loss = F.mse_loss(output, y)
+        loss = F.cross_entropy(output, y)
         # Logging to TensorBoard by default
         self.log("test_loss", loss)
 

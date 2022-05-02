@@ -61,7 +61,11 @@ class OSMDataset(Dataset):
             Any: Item
         """
         molecule = t.tensor(self.train_set_df.iloc[index][2:], dtype=t.float32)
-        label = t.tensor(self.train_res_df.iloc[index][2], dtype=t.float32)
+        label = self.train_res_df.iloc[index][2]
+        if label < 1:
+            label = t.tensor([1, 0], dtype=t.float32)
+        else:
+            label = t.tensor([0, 1], dtype=t.float32)
         if self.transform:
             molecule = self.transform(molecule)
         if self.target_transform:
@@ -84,7 +88,7 @@ class OSMDataModule(pl.LightningDataModule):
             .parents[3]
             .joinpath("data/01_raw/train_res.csv")
         ),
-        batch_size: int = 1,
+        batch_size: int = 10,
         transform: Optional[Any] = None,
         target_transform: Optional[Any] = None,
     ) -> None:
