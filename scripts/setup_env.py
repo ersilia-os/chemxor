@@ -22,18 +22,18 @@ def write_env() -> None:
     print("\n\n+++++++++++ Env File +++++++++++++\n")
     data = f"""
 export CONDA_SHELL_PATH={(tools_path / 'miniconda' / 'etc' / 'profile.d' / 'conda.sh')}
-export CONDA_ENV_PATH={(tools_path / 'miniconda' / 'envs' / 'imcloud')}
-export PATH={(tools_path / 'miniconda' / 'envs' / 'imcloud' / 'bin')}:{(tools_path / 'miniconda' / 'condabin')}:${{PATH:+:${{PATH}}}}
+export CONDA_ENV_PATH={(tools_path / 'miniconda' / 'envs' / 'chemxor')}
+export PATH={(tools_path / 'miniconda' / 'envs' / 'chemxor' / 'bin')}:{(tools_path / 'miniconda' / 'condabin')}:${{PATH:+:${{PATH}}}}
 export _CE_M=
 export _CE_CONDA=
 export CONDA_EXE={(tools_path / 'miniconda' / 'bin' / 'conda')}
 export CONDA_PYTHON_EXE={(tools_path / 'miniconda' / 'bin' / 'conda' / "python")}
 export CONDA_SHLVL=2
-export CONDA_PREFIX={(tools_path / 'miniconda' / 'envs' / 'imcloud')}
-export CONDA_DEFAULT_ENV=imcloud
-export CONDA_PROMPT_MODIFIER=(imcloud)
+export CONDA_PREFIX={(tools_path / 'miniconda' / 'envs' / 'chemxor')}
+export CONDA_DEFAULT_ENV=chemxor
+export CONDA_PROMPT_MODIFIER=(chemxor)
 export CONDA_PREFIX_1={(tools_path / 'miniconda')}
-export PS1=\"(imcloud) ${{PS1:+${{PS1}}}}\"
+export PS1=\"(chemxor) ${{PS1:+${{PS1}}}}\"
     """
     with open((project_root / ".setup.env"), "w") as f:
         f.write(data)
