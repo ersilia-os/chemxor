@@ -130,3 +130,6 @@ dmypy.json
 
 scratch
 lightning_logs
+data/session_store.db
+kaobook
+.setup.env
