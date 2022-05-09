@@ -51,7 +51,7 @@ nglview = "^3.0.3"
 kedro-viz = "^4.4.0"
 
 [tool.poetry.scripts]
-chemxor = "chemxor.cli:cli"
+chemxor = "chemxor.cli.main:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
