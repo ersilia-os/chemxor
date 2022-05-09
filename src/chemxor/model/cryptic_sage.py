@@ -36,7 +36,7 @@ class CrypticSage(pl.LightningModule):
         x = F.relu(self.layer_2(x))
         x = F.relu(self.layer_3(x))
         x = F.relu(self.layer_4(x))
-        return F.log_softmax(self.layer_5(x))
+        return self.layer_5(x)
 
     def training_step(self: "CrypticSage", batch: Any, batch_idx: Any) -> Any:
         """Training step.
@@ -50,6 +50,12 @@ class CrypticSage(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
+
+        # Logging accuracy
+        correct = output.argmax(dim=1).eq(y.argmax(dim=1)).sum().item()
+        total = len(y)
+        self.log("train_accuracy", correct / total)
+
         loss = F.cross_entropy(output, y)
         # Logging to TensorBoard by default
         self.log("train_loss", loss)
@@ -65,6 +71,12 @@ class CrypticSage(pl.LightningModule):
         x, y = batch
         output = self(x)
         loss = F.cross_entropy(output, y)
+
+        # Logging accuracy
+        correct = output.argmax(dim=1).eq(y.argmax(dim=1)).sum().item()
+        total = len(y)
+        self.log("val_accuracy", correct / total)
+
         # Logging to TensorBoard by default
         self.log("validation_loss", loss)
 
@@ -78,6 +90,12 @@ class CrypticSage(pl.LightningModule):
         x, y = batch
         output = self(x)
         loss = F.cross_entropy(output, y)
+
+        # Logging accuracy
+        correct = output.argmax(dim=1).eq(y.argmax(dim=1)).sum().item()
+        total = len(y)
+        self.log("test_accuracy", correct / total)
+
         # Logging to TensorBoard by default
         self.log("test_loss", loss)
 
