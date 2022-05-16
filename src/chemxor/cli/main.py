@@ -1,7 +1,9 @@
 """Chemxor CLI."""
 
 import click
+import json
 from flask import Flask
+from pydantic import parse_obj_as
 import requests
 import tenseal as ts
 
@@ -33,16 +35,17 @@ def query() -> None:
     context = ts.context(
         ts.SCHEME_TYPE.BFV, poly_modulus_degree=4096, plain_modulus=1032193
     )
-    sk = context.secret_key()
+    local_context = context.copy()
     context.make_context_public()
     plain_vector = [60, 66, 73, 81, 90]
     encrypted_vector = ts.bfv_vector(context, plain_vector)
-    test_enc_post = TestEncPost(context=context, vector=encrypted_vector)
-    res = requests.post("localhost:7880/v1/test_encryption/", json=test_enc_post.json())
-    print(res.json())
-    test_enc_res = TestEncResponse.parse_obj(res.json())
-    dec_vector = test_enc_res.vector.decrypt()
-    print(f"Decrypted vector: {dec_vector}")
+    test_enc_post = TestEncPost(
+        context=context.serialize().hex(), vector=encrypted_vector.serialize().hex()
+    )
+    res = requests.post("http://localhost:7880/v1/test/", json=test_enc_post.json())
+    test_enc_res = parse_obj_as(TestEncResponse, json.loads(res.content))
+    dec_vector = ts.bfv_vector_from(local_context, bytes.fromhex(test_enc_res.vector))
+    print(f"Decrypted vector: {dec_vector.decrypt(local_context.secret_key())}")
 
 
 @click.group()

@@ -1,18 +1,16 @@
 """Test encryption schema."""
 
-from typing import Any
-
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class TestEncPost(BaseModel):
     """Test encryption post schema."""
 
-    context: Any
-    vector: Any
+    context: str = Field(unicode_safe=False)
+    vector: str = Field(unicode_safe=False)
 
 
 class TestEncResponse(BaseModel):
     """Test encryption response schema."""
 
-    vector: Any
+    vector: str = Field(unicode_safe=False)

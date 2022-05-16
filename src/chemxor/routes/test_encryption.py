@@ -1,11 +1,10 @@
 """Test encryption route."""
 
-from http.client import OK
-import json
 from http import HTTPStatus
 
-from flask import Blueprint, make_response, Response, request
-from pydantic import parse_obj_as, ValidationError
+from flask import Blueprint, make_response, request, Response
+from pydantic import parse_raw_as, ValidationError
+import tenseal as ts
 
 from chemxor.schema.test_encryption import TestEncPost, TestEncResponse
 
@@ -21,14 +20,23 @@ def test_encryption_post() -> Response:
     """
     # Parse json from requests
     try:
-        test_enc = parse_obj_as(TestEncPost, json.loads(request.data))
+        test_enc = parse_raw_as(TestEncPost, request.json)
     except ValidationError:
-        response_body = TestEncResponse(vector=[])
+        response_body = TestEncResponse(vector="")
         return make_response(response_body.json(), HTTPStatus.BAD_REQUEST)
     except Exception:
-        response_body = TestEncResponse(vector=[])
+        response_body = TestEncResponse(vector="")
         return make_response(response_body.json(), HTTPStatus.INTERNAL_SERVER_ERROR)
 
     # Perform addition
-    new_vector = test_enc.vector + [1, 2, 3]
-    return make_response(TestEncResponse(vector=new_vector).json(), HTTPStatus.OK)
+    context = ts.context_from(bytes.fromhex(test_enc.context))
+    new_vector = ts.bfv_vector_from(context, bytes.fromhex(test_enc.vector)) + [
+        1,
+        1,
+        1,
+        1,
+        1,
+    ]
+    return make_response(
+        TestEncResponse(vector=new_vector.serialize().hex()).json(), HTTPStatus.OK
+    )
