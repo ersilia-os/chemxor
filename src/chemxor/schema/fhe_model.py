@@ -1,5 +1,7 @@
 """FHE Encrypted model API schema."""
 
+from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -13,4 +15,4 @@ class FHEModelQueryPostRequest(BaseModel):
 class FHEModelQueryPostResponse(BaseModel):
     """FHE Encrypted model query post response schema."""
 
-    output_tensor: str = Field(unicode_safe=False)
+    output_tensor: Optional[str] = Field(unicode_safe=False)
