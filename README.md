@@ -10,7 +10,11 @@ ChemXor is an open source library for training and evaluating PyTorch models on 
 
 ### What is Fully Homomorphic Encryption (FHE)?
 
+> A cryptosystem that supports arbitrary computation on ciphertexts is known as fully homomorphic encryption (FHE). Such a scheme enables the construction of programs for any desirable functionality, which can be run on encrypted inputs to produce an encryption of the result. Since such a program need never decrypt its inputs, it can be run by an untrusted party without revealing its inputs and internal state. Fully homomorphic cryptosystems have great practical implications in the outsourcing of private computations. (Wikipedia)
+
 ### Why do you need FHE for Machine Learning?
+
+Using FHE, one can compute on encrypted data, without learning anything about the data. This enables novel privacy preserving interactions between actors in the context of machine learning.
 
 ## Getting Started
 
@@ -25,7 +29,7 @@ Use the `FHECryptor` class to convert Pytorch models for FHE inputs.
 ```python
 import tenseal as ts
 from chemxor.crypt import FHECryptor
-from chemxor.models.cryptic_sage import CrypticSage
+from chemxor.model.cryptic_sage import CrypticSage
 
 # Create a tenseal context
 context = ts.context(
@@ -41,7 +45,7 @@ fhe_cryptor = FHECryptor(context)
 model = CrypticSage()
 
 # Convert model using the FHECryptor
-converted_model = fhe_cryptor.convert_model(model)
+converted_model = fhe_cryptor.convert_model(model, dummy_input)
 
 # Converted model is still a Pytorch lightning module
 # So use it as usual for evaluating encrypted inputs
@@ -55,7 +59,7 @@ Quickly serve models as a service
 from chemxor.service import create_model_server
 
 # `create_model_server` returns a flask app
-flask_app = create_model_server(model)
+flask_app = create_model_server(model, dummy_input)
 
 if __name__ == "__main__":
     flask_app.run()
