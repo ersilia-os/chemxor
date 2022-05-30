@@ -8,10 +8,12 @@ from chemxor.model.cryptic_sage import CrypticSage
 
 
 def init_osm_data_module() -> pl.LightningDataModule:
+    """Initialize OSM data module."""
     return OSMDataModule()
 
 
 def init_cryptic_sage_model() -> pl.LightningModule:
+    """Initialize Cryptic Sage model."""
     return CrypticSage()
 
 
@@ -19,7 +21,7 @@ def train_cryptic_sage_model(
     osm_data_module: pl.LightningDataModule,
     cryptic_sage_model: pl.LightningDataModule,
 ) -> None:
-    """Train model node funciton."""
+    """Train model."""
     trainer = pl.Trainer(limit_train_batches=100)
     trainer.fit(model=cryptic_sage_model, datamodule=osm_data_module)
 
