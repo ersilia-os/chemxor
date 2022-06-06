@@ -68,10 +68,9 @@ class FHECryptor:
         if self.context.has_public_key() is False:
             raise Exception("Public key not found in the context")
         else:
-            encryptor = self.context.encryptor()
-            return encryptor(tensor)
+            return ts.ckks_tensor(self.context, tensor)
 
-    def decrypt_tensor(self: "FHECryptor", enc_tensor: Tensor) -> Tensor:
+    def decrypt_tensor(self: "FHECryptor", enc_tensor: ts.CKKSTensor) -> Tensor:
         """Decrypt the tensor.
 
         Args:
@@ -86,5 +85,4 @@ class FHECryptor:
         if self.context.has_secret_key() is False:
             raise Exception("Secret key not found in the context")
         else:
-            decryptor = self.context.decryptor()
-            return decryptor(enc_tensor)
+            return enc_tensor.decrypt(self.context.secret_key())
