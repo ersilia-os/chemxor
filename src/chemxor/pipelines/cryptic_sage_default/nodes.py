@@ -5,6 +5,7 @@ import pytorch_lightning as pl
 
 from chemxor.data_modules.osm import OSMDataModule
 from chemxor.model.cryptic_sage import CrypticSage
+from chemxor.utils import get_project_root_path
 
 
 def init_osm_data_module() -> pl.LightningDataModule:
@@ -22,7 +23,12 @@ def train_cryptic_sage_model(
     cryptic_sage_model: pl.LightningDataModule,
 ) -> None:
     """Train model."""
-    trainer = pl.Trainer(limit_train_batches=100)
+    checkpoint_callback = pl.callbacks.ModelCheckpoint(
+        dirpath=get_project_root_path().joinpath("data/06_models"),
+        save_top_k=3,
+        monitor="validation_loss",
+    )
+    trainer = pl.Trainer(callbacks=[checkpoint_callback])
     trainer.fit(model=cryptic_sage_model, datamodule=osm_data_module)
 
 
