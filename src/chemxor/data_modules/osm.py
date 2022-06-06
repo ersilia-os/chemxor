@@ -5,8 +5,11 @@ from typing import Any, Optional
 
 import pandas as pd
 import pytorch_lightning as pl
+import tenseal as ts
 import torch as t
 from torch.utils.data import DataLoader, Dataset, random_split
+
+from chemxor.data_modules.enc_dataset import EncDataset
 
 
 class OSMDataset(Dataset):
@@ -128,8 +131,12 @@ class OSMDataModule(pl.LightningDataModule):
             self.transform,
             self.target_transform,
         )
-        # first split between train and test
-        self.osm_train, self.osm_val = random_split(osm_full, [270, 117])
+        self.osm_train, self.osm_val = random_split(
+            osm_full, [270, 117], t.Generator().manual_seed(7777)
+        )
+
+        # hack for now, please fixme later
+        self.osm_test, self.osm_predict = self.osm_val, self.osm_val
 
         # # split train into train and validation
         # self.osm_train, self.osm_val = random_split(
@@ -156,6 +163,18 @@ class OSMDataModule(pl.LightningDataModule):
         """
         return DataLoader(self.osm_train, batch_size=self.batch_size)
 
+    def enc_train_dataloader(self: "OSMDataModule", context: ts.Context) -> DataLoader:
+        """Encrypted train dataloader.
+
+        Args:
+            context (ts.Context): Tenseal encryption context.
+
+        Returns:
+            DataLoader: train dataloader
+        """
+        enc_osm_train = EncDataset(context, self.osm_train)
+        return DataLoader(enc_osm_train, batch_size=self.batch_size)
+
     def val_dataloader(self: "OSMDataModule") -> DataLoader:
         """Val dataloader.
 
@@ -164,21 +183,59 @@ class OSMDataModule(pl.LightningDataModule):
         """
         return DataLoader(self.osm_val, batch_size=self.batch_size)
 
-    # def test_dataloader(self: "OSMDataModule") -> DataLoader:
-    #     """Test data loader.
+    def enc_val_dataloader(self: "OSMDataModule", context: ts.Context) -> DataLoader:
+        """Encrypted val dataloader.
 
-    #     Returns:
-    #         DataLoader : test dataloader
-    #     """
-    #     return DataLoader(self.osm_test, batch_size=self.batch_size)
+        Args:
+            context (ts.Context): Tenseal encryption context.
 
-    # def predict_dataloader(self: "OSMDataModule") -> DataLoader:
-    #     """Predict data loader.
+        Returns:
+            DataLoader: val dataloader
+        """
+        enc_osm_val = EncDataset(context, self.osm_val)
+        return DataLoader(enc_osm_val, batch_size=self.batch_size)
 
-    #     Returns:
-    #         DataLoader : predict dataloader
-    #     """
-    #     return DataLoader(self.osm_predict, batch_size=self.batch_size)
+    def test_dataloader(self: "OSMDataModule") -> DataLoader:
+        """Test data loader.
+
+        Returns:
+            DataLoader : test dataloader
+        """
+        return DataLoader(self.osm_test, batch_size=self.batch_size)
+
+    def enc_test_dataloader(self: "OSMDataModule", context: ts.Context) -> DataLoader:
+        """Encrypted test dataloader.
+
+        Args:
+            context (ts.Context): Tenseal encryption context.
+
+        Returns:
+            DataLoader: test dataloader
+        """
+        enc_osm_test = EncDataset(context, self.osm_test)
+        return DataLoader(enc_osm_test, batch_size=self.batch_size)
+
+    def predict_dataloader(self: "OSMDataModule") -> DataLoader:
+        """Predict data loader.
+
+        Returns:
+            DataLoader : predict dataloader
+        """
+        return DataLoader(self.osm_predict, batch_size=self.batch_size)
+
+    def enc_predict_dataloader(
+        self: "OSMDataModule", context: ts.Context
+    ) -> DataLoader:
+        """Encrypted predict dataloader.
+
+        Args:
+            context (ts.Context): Tenseal encryption context.
+
+        Returns:
+            DataLoader: predict dataloader
+        """
+        enc_osm_predict = EncDataset(context, self.osm_predict)
+        return DataLoader(enc_osm_predict, batch_size=self.batch_size)
 
     def teardown(self: "OSMDataModule", stage: Optional[str] = None) -> None:
         """Teardown of data module."""
