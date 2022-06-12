@@ -1,5 +1,6 @@
 """OSM data module."""
 
+from copy import deepcopy
 from pathlib import Path
 from typing import Any, Optional
 
@@ -136,7 +137,11 @@ class OSMDataModule(pl.LightningDataModule):
         )
 
         # hack for now, please fixme later
-        self.osm_test, self.osm_predict = self.osm_val, self.osm_val
+        self.enc_osm_train = deepcopy(self.osm_train)
+        self.osm_test = deepcopy(self.osm_val)
+        self.enc_osm_test = deepcopy(self.osm_val)
+        self.osm_predict = deepcopy(self.osm_val)
+        self.enc_osm_predict = deepcopy(self.osm_val)
 
         # # split train into train and validation
         # self.osm_train, self.osm_val = random_split(
@@ -172,7 +177,7 @@ class OSMDataModule(pl.LightningDataModule):
         Returns:
             DataLoader: train dataloader
         """
-        enc_osm_train = EncDataset(context, self.osm_train)
+        enc_osm_train = EncDataset(context, self.enc_osm_train)
         return DataLoader(enc_osm_train, batch_size=self.batch_size)
 
     def val_dataloader(self: "OSMDataModule") -> DataLoader:
@@ -192,7 +197,7 @@ class OSMDataModule(pl.LightningDataModule):
         Returns:
             DataLoader: val dataloader
         """
-        enc_osm_val = EncDataset(context, self.osm_val)
+        enc_osm_val = EncDataset(context, self.enc_osm_val)
         return DataLoader(enc_osm_val, batch_size=self.batch_size)
 
     def test_dataloader(self: "OSMDataModule") -> DataLoader:
@@ -212,7 +217,7 @@ class OSMDataModule(pl.LightningDataModule):
         Returns:
             DataLoader: test dataloader
         """
-        enc_osm_test = EncDataset(context, self.osm_test)
+        enc_osm_test = EncDataset(context, self.enc_osm_test)
         return DataLoader(enc_osm_test, batch_size=self.batch_size)
 
     def predict_dataloader(self: "OSMDataModule") -> DataLoader:
@@ -234,7 +239,7 @@ class OSMDataModule(pl.LightningDataModule):
         Returns:
             DataLoader: predict dataloader
         """
-        enc_osm_predict = EncDataset(context, self.osm_predict)
+        enc_osm_predict = EncDataset(context, self.enc_osm_predict)
         return DataLoader(enc_osm_predict, batch_size=self.batch_size)
 
     def teardown(self: "OSMDataModule", stage: Optional[str] = None) -> None:
