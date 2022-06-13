@@ -3,6 +3,7 @@
 from typing import Any
 
 import pytorch_lightning as pl
+import tenseal as ts
 import torch
 from torch.nn import functional as F
 from torch.optim import Adam, Optimizer
@@ -41,27 +42,41 @@ class EncryptedSage(pl.LightningModule):
         Returns:
             Any: model output
         """
-        batch_size = x.size(0)
-        x = x.view(batch_size, -1)
+        # Check for tensor type as encrypted tensors do not impement x.size and x.view
+        if type(x) not in [
+            ts.CKKSTensor,
+            ts.BFVTensor,
+            ts.CKKSVector,
+            ts.BFVVector,
+            ts.PlainTensor,
+        ]:
+            batch_size = x.size(0)
+            x = x.view(batch_size, -1)
+            converter = torch.tensor
+
+        else:
+
+            def converter(x: Any) -> Any:
+                return x
 
         # layer 1
-        x = x.mm(self.layer_1_weight) + self.layer_1_bias
+        x = x.mm(converter(self.layer_1_weight)) + converter(self.layer_1_bias)
         x.square_()
 
         # layer 2
-        x = x.mm(self.layer_2_weight) + self.layer_2_bias
+        x = x.mm(converter(self.layer_2_weight)) + converter(self.layer_2_bias)
         x.square_()
 
         # layer 3
-        x = x.mm(self.layer_3_weight) + self.layer_3_bias
+        x = x.mm(converter(self.layer_3_weight)) + converter(self.layer_3_bias)
         x.square_()
 
         # layer 4
-        x = x.mm(self.layer_4_weight) + self.layer_4_bias
+        x = x.mm(converter(self.layer_4_weight)) + converter(self.layer_4_bias)
         x.square_()
 
         # layer 5
-        x = x.mm(self.layer_5_weight) + self.layer_5_bias
+        x = x.mm(converter(self.layer_5_weight)) + converter(self.layer_5_bias)
 
         return x
 
