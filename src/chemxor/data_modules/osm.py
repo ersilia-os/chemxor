@@ -178,7 +178,7 @@ class OSMDataModule(pl.LightningDataModule):
             DataLoader: train dataloader
         """
         enc_osm_train = EncDataset(context, self.enc_osm_train)
-        return DataLoader(enc_osm_train, batch_size=self.batch_size)
+        return DataLoader(enc_osm_train, batch_size=None)
 
     def val_dataloader(self: "OSMDataModule") -> DataLoader:
         """Val dataloader.
@@ -198,7 +198,7 @@ class OSMDataModule(pl.LightningDataModule):
             DataLoader: val dataloader
         """
         enc_osm_val = EncDataset(context, self.enc_osm_val)
-        return DataLoader(enc_osm_val, batch_size=self.batch_size)
+        return DataLoader(enc_osm_val, batch_size=None)
 
     def test_dataloader(self: "OSMDataModule") -> DataLoader:
         """Test data loader.
@@ -218,7 +218,7 @@ class OSMDataModule(pl.LightningDataModule):
             DataLoader: test dataloader
         """
         enc_osm_test = EncDataset(context, self.enc_osm_test)
-        return DataLoader(enc_osm_test, batch_size=self.batch_size)
+        return DataLoader(enc_osm_test, batch_size=None)
 
     def predict_dataloader(self: "OSMDataModule") -> DataLoader:
         """Predict data loader.
@@ -240,7 +240,7 @@ class OSMDataModule(pl.LightningDataModule):
             DataLoader: predict dataloader
         """
         enc_osm_predict = EncDataset(context, self.enc_osm_predict)
-        return DataLoader(enc_osm_predict, batch_size=self.batch_size)
+        return DataLoader(enc_osm_predict, batch_size=None)
 
     def teardown(self: "OSMDataModule", stage: Optional[str] = None) -> None:
         """Teardown of data module."""
