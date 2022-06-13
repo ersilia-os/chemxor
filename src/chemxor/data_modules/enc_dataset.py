@@ -41,5 +41,5 @@ class EncDataset(Dataset):
         # Encrypt items
         enc_item_list = []
         for item in items:
-            enc_item_list.append(ts.ckks_tensor(self.context, item))
+            enc_item_list.append(ts.ckks_tensor(self.context, item.reshape(1, -1)))
         return tuple(enc_item_list)
