@@ -28,7 +28,7 @@ def train_cryptic_sage_model(
         save_top_k=3,
         monitor="validation_loss",
     )
-    trainer = pl.Trainer(callbacks=[checkpoint_callback])
+    trainer = pl.Trainer(callbacks=[checkpoint_callback], accelerator="auto")
     trainer.fit(model=cryptic_sage_model, datamodule=osm_data_module)
 
 

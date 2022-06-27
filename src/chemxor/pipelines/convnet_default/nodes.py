@@ -28,7 +28,7 @@ def train_convnet_model(
         save_top_k=3,
         monitor="validation_loss",
     )
-    trainer = pl.Trainer(callbacks=[checkpoint_callback])
+    trainer = pl.Trainer(callbacks=[checkpoint_callback], accelerator="auto")
     trainer.fit(model=model, datamodule=data_module)
 
 
