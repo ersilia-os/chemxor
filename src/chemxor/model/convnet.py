@@ -6,7 +6,7 @@ import pytorch_lightning as pl
 from torch import nn
 from torch.nn import functional as F
 from torch.optim import Adam, Optimizer
-from torchmetrics import Accuracy, ConfusionMatrix, MetricCollection, Precision, Recall
+from torchmetrics import Accuracy, MetricCollection, Precision, Recall
 
 
 # Adapted from https://github.dev/OpenMined/TenSEAL/blob/6516f215a0171fd9ad70f60f2f9b3d0c83d0d7c4/tutorials/Tutorial%204%20-%20Encrypted%20Convolution%20on%20MNIST.ipynb
@@ -28,7 +28,6 @@ class ConvNet(pl.LightningModule):
                 Accuracy(),
                 Precision(num_classes=output, average="macro"),
                 Recall(num_classes=output, average="macro"),
-                ConfusionMatrix(num_classes=output),
             ]
         )
         self.train_metrics = metrics.clone(prefix="train_")
