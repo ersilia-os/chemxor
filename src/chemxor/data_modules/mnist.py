@@ -6,7 +6,7 @@ from typing import Any, Optional, Union
 
 import pytorch_lightning as pl
 import tenseal as ts
-from torch import Module
+from torch import nn
 from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
 from torchvision.datasets import MNIST
@@ -32,7 +32,7 @@ class MNISTDataModule(pl.LightningDataModule):
             ]
         ),
         target_transform: Optional[Any] = None,
-        model: Optional[Union[Module, pl.LightningModule]] = None,
+        model: Optional[Union[nn.Module, pl.LightningModule]] = None,
     ) -> None:
         """Initialize.
 
@@ -43,7 +43,7 @@ class MNISTDataModule(pl.LightningDataModule):
             transform (Optional[Any]): Tranforms for the inputs.
                 Defaults to transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
             target_transform (Optional[Any]): Transforms for the target. Defaults to None.
-            model (Optional[Union[Module, pl.LightningModule]]): Model. Default to None.
+            model (Optional[Union[nn.Module, pl.LightningModule]]): Model. Default to None.
         """
         super().__init__()
         self.batch_size = batch_size
