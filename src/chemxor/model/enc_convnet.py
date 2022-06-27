@@ -6,7 +6,7 @@ import pytorch_lightning as pl
 import tenseal as ts
 from torch.nn import functional as F
 from torch.optim import Adam, Optimizer
-from torchmetrics import Accuracy, ConfusionMatrix, MetricCollection, Precision, Recall
+from torchmetrics import Accuracy, MetricCollection, Precision, Recall
 
 
 from chemxor.model.convnet import ConvNet
@@ -39,7 +39,6 @@ class EncryptedConvNet(pl.LightningModule):
                 Accuracy(),
                 Precision(num_classes=model.output, average="macro"),
                 Recall(num_classes=model.output, average="macro"),
-                ConfusionMatrix(num_classes=model.output),
             ]
         )
         self.train_metrics = metrics.clone(prefix="train_")
