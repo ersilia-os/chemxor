@@ -16,7 +16,8 @@ class ConvNet(pl.LightningModule):
     def __init__(self: "ConvNet", hidden: int = 64, output: int = 10) -> None:
         """Init."""
         super().__init__()
-
+        self.hidden = hidden
+        self.output = output
         self.conv1 = nn.Conv2d(1, 4, kernel_size=7, padding=0, stride=3)
         self.fc1 = nn.Linear(256, hidden)
         self.fc2 = nn.Linear(hidden, output)
