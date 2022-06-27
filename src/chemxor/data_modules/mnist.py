@@ -1,15 +1,17 @@
 """MNIST data module."""
 
+from multiprocessing import cpu_count
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import pytorch_lightning as pl
 import tenseal as ts
+from torch import Module
 from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
 from torchvision.datasets import MNIST
 
-from chemxor.data_modules.enc_dataset import EncDataset
+from chemxor.data_modules.enc_conv_dataset import EncConvDataset
 from chemxor.utils import get_project_root_path
 
 
@@ -30,6 +32,7 @@ class MNISTDataModule(pl.LightningDataModule):
             ]
         ),
         target_transform: Optional[Any] = None,
+        model: Optional[Union[Module, pl.LightningModule]] = None,
     ) -> None:
         """Initialize.
 
@@ -40,12 +43,14 @@ class MNISTDataModule(pl.LightningDataModule):
             transform (Optional[Any]): Tranforms for the inputs.
                 Defaults to transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
             target_transform (Optional[Any]): Transforms for the target. Defaults to None.
+            model (Optional[Union[Module, pl.LightningModule]]): Model. Default to None.
         """
         super().__init__()
         self.batch_size = batch_size
         self.data_dir = data_dir
         self.transform = transform
         self.target_transform = target_transform
+        self.model = model
 
     def prepare_data(self: "MNISTDataModule") -> None:
         """Prepare data."""
@@ -73,7 +78,9 @@ class MNISTDataModule(pl.LightningDataModule):
 
     def train_dataloader(self: "MNISTDataModule") -> DataLoader:
         """Train dataloader."""
-        return DataLoader(self.mnist_train, batch_size=self.batch_size)
+        return DataLoader(
+            self.mnist_train, batch_size=self.batch_size, num_workers=cpu_count()
+        )
 
     def enc_train_dataloader(
         self: "MNISTDataModule", context: ts.Context
@@ -86,12 +93,19 @@ class MNISTDataModule(pl.LightningDataModule):
         Returns:
             DataLoader: train dataloader
         """
-        enc_mnist_train = EncDataset(context, self.mnist_train)
+        enc_mnist_train = EncConvDataset(
+            context,
+            self.mnist_train,
+            self.model.conv1.kernel_size,
+            self.model.conv1.stride[0],
+        )
         return DataLoader(enc_mnist_train, batch_size=None)
 
     def val_dataloader(self: "MNISTDataModule") -> DataLoader:
         """Validation dataloader."""
-        return DataLoader(self.mnist_val, batch_size=self.batch_size)
+        return DataLoader(
+            self.mnist_val, batch_size=self.batch_size, num_workers=cpu_count()
+        )
 
     def enc_val_dataloader(self: "MNISTDataModule", context: ts.Context) -> DataLoader:
         """Encrypted validation dataloader.
@@ -102,12 +116,19 @@ class MNISTDataModule(pl.LightningDataModule):
         Returns:
             DataLoader: validation dataloader
         """
-        enc_mnist_val = EncDataset(context, self.mnist_val)
+        enc_mnist_val = EncConvDataset(
+            context,
+            self.mnist_val,
+            self.model.conv1.kernel_size,
+            self.model.conv1.stride[0],
+        )
         return DataLoader(enc_mnist_val, batch_size=None)
 
     def test_dataloader(self: "MNISTDataModule") -> DataLoader:
         """Test dataloader."""
-        return DataLoader(self.mnist_test, batch_size=self.batch_size)
+        return DataLoader(
+            self.mnist_test, batch_size=self.batch_size, num_workers=cpu_count()
+        )
 
     def enc_test_dataloader(self: "MNISTDataModule", context: ts.Context) -> DataLoader:
         """Encrypted test dataloader.
@@ -118,12 +139,19 @@ class MNISTDataModule(pl.LightningDataModule):
         Returns:
             DataLoader: test dataloader
         """
-        enc_mnist_test = EncDataset(context, self.mnist_test)
+        enc_mnist_test = EncConvDataset(
+            context,
+            self.mnist_test,
+            self.model.conv1.kernel_size,
+            self.model.conv1.stride[0],
+        )
         return DataLoader(enc_mnist_test, batch_size=None)
 
     def predict_dataloader(self: "MNISTDataModule") -> DataLoader:
         """Predict dataloader."""
-        return DataLoader(self.mnist_predict, batch_size=self.batch_size)
+        return DataLoader(
+            self.mnist_predict, batch_size=self.batch_size, num_workers=cpu_count()
+        )
 
     def enc_predict_dataloader(
         self: "MNISTDataModule", context: ts.Context
@@ -136,5 +164,10 @@ class MNISTDataModule(pl.LightningDataModule):
         Returns:
             DataLoader: predict dataloader
         """
-        enc_mnist_predict = EncDataset(context, self.mnist_predict)
+        enc_mnist_predict = EncConvDataset(
+            context,
+            self.mnist_predict,
+            self.model.conv1.kernel_size,
+            self.model.conv1.stride[0],
+        )
         return DataLoader(enc_mnist_predict, batch_size=None)
