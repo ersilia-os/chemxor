@@ -41,5 +41,9 @@ class EncDataset(Dataset):
         # Encrypt items
         enc_item_list = []
         for item in items:
-            enc_item_list.append(ts.ckks_tensor(self.context, item.reshape(1, -1)))
+            try:
+                _ = self.context.global_scale
+                enc_item_list.append(ts.ckks_tensor(self.context, item.reshape(1, -1)))
+            except ValueError:
+                enc_item_list.append(ts.bfv_tensor(self.context, item.reshape(1, -1)))
         return tuple(enc_item_list)
