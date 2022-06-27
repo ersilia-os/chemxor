@@ -18,20 +18,20 @@ class EncryptedSage(pl.LightningModule):
         """Init."""
         super().__init__()
 
-        self.layer_1_weight = torch.tensor((model.layer_1.weight.T.data.tolist()))
-        self.layer_1_bias = torch.tensor(model.layer_1.bias.data.tolist())
+        self.layer_1_weight = model.layer_1.weight.T.data.tolist()
+        self.layer_1_bias = model.layer_1.bias.data.tolist()
 
-        self.layer_2_weight = torch.tensor(model.layer_2.weight.T.data.tolist())
-        self.layer_2_bias = torch.tensor(model.layer_2.bias.data.tolist())
+        self.layer_2_weight = model.layer_2.weight.T.data.tolist()
+        self.layer_2_bias = model.layer_2.bias.data.tolist()
 
-        self.layer_3_weight = torch.tensor(model.layer_3.weight.T.data.tolist())
-        self.layer_3_bias = torch.tensor(model.layer_3.bias.data.tolist())
+        self.layer_3_weight = model.layer_3.weight.T.data.tolist()
+        self.layer_3_bias = model.layer_3.bias.data.tolist()
 
-        self.layer_4_weight = torch.tensor(model.layer_4.weight.T.data.tolist())
-        self.layer_4_bias = torch.tensor(model.layer_4.bias.data.tolist())
+        self.layer_4_weight = model.layer_4.weight.T.data.tolist()
+        self.layer_4_bias = model.layer_4.bias.data.tolist()
 
-        self.layer_5_weight = torch.tensor(model.layer_5.weight.T.data.tolist())
-        self.layer_5_bias = torch.tensor(model.layer_5.bias.data.tolist())
+        self.layer_5_weight = model.layer_5.weight.T.data.tolist()
+        self.layer_5_bias = model.layer_5.bias.data.tolist()
 
     def forward(self: "EncryptedSage", x: Any) -> Any:
         """Forward function.
