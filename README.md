@@ -18,13 +18,68 @@ Using FHE, one can compute on encrypted data, without learning anything about th
 
 ## Getting Started
 
-Install the `chemxor` library from PyPi.
+Chemxor is available on PyPi and can be installed using pip.
 
 ```bash
 pip install chemxor
 ```
 
-Use the `FHECryptor` class to convert Pytorch models for FHE inputs.
+**Encryption context**
+
+We first need to create an encryption context to begin encrypting models and inputs. The TenSeal library is used to create encryption contexts. In the example below, we are using the CKKS encryption scheme.&#x20;
+
+```python
+import tenseal as ts
+
+# Create a tenseal context
+context = ts.context(
+    ts.SCHEME_TYPE.CKKS,
+    poly_modulus_degree=8192,
+    coeff_mod_bit_sizes=[60, 40, 40, 60]
+)
+context.global_scale = pow(2, 40)
+context.generate_galois_keys()
+```
+
+There are other encryption schemes available with their own strengths and weaknesses. Choosing parameters for encryption schemes is not trivial and requires trial and error. More detailed documentation for available encryption schemes and their parameters is available [here](https://github.com/Microsoft/SEAL#examples) and [here](https://github.com/OpenMined/TenSEAL/tree/main/tutorials). There are other projects ([EVA](https://github.com/Microsoft/EVA) compiler for CKKS) that are trying to automate the selection of parameters for specific encryption schemes. However, this is currently out of scope for ChemXor.
+
+**Encrypted Datasets**
+
+ChemXor provides functions to easily convert your Pytorch datasets to Encrypted datasets.
+
+```python
+from torch.utils.data import DataLoader
+from chemxor.data_modules.enc_dataset import EncDataset
+
+# Use the context that we created earlier
+enc_pytorch_dataset = EncDataset(context, pytorch_dataset)
+
+# The encrypted datasets can also be used to create dataloaders
+DataLoader(enc_pytorch_dataset, batch_size=None)
+```
+
+`EncDataset` class is a wrapper that modifies that **`__getitem__`** method of the `Dataset` class from Pytorch. It encrypts the items using the provided `context` before returning the items.
+
+ChemXor also provides `EncConvDataset` class, a variant to `EncDataset` class for inputs that undergo convolution operations.
+
+```python
+from torch.utils.data import DataLoader
+from chemxor.data_modules.enc_conv_dataset import EncConvDataset
+
+# Use the context that we created earlier
+enc_pytorch_dataset = EncConvDataset(context, pytorch_dataset, kernel_size, stride)
+
+# The encrypted datasets can also be used to create dataloaders
+DataLoader(enc_osm_train, batch_size=None)
+```
+
+It uses image-to-column encoding of inputs to speed up computation. More details on this topic can be found [here](https://github.com/OpenMined/TenSEAL/blob/main/tutorials/Tutorial%204%20-%20Encrypted%20Convolution%20on%20MNIST.ipynb).
+
+> `EncDataset` and `EncConvDataset` does not encrypt the data on disk. Items are encryted lazily on the fly as needed.
+
+**Encrypted models**
+
+ChemXor can automatically convert Pytorch models to models that can be evaluated on encrypted inputs. However, evaluating any arbitrary converted model on encrypted inputs can take an infeasibly long time. This is a major limitation of FHE at the moment.
 
 ```python
 import tenseal as ts
@@ -52,10 +107,102 @@ converted_model = fhe_cryptor.convert_model(model, dummy_input)
 enc_output = converted_model(enc_input)
 ```
 
-Quickly serve models as a service
+ChemXor first converts the Pytorch model to an ONNX model. This ONNX model is then used to create an equivalent function chain that can process encrypted inputs. The resulting converted model is still a Pytorch model with a modified forward function. We are still working on supporting all the operations in the ONNX spec. But, some of the operations might not be available at the time of release.
+
+It is also possible to manually wrap an existing Pytorch model class to make it compatible with encrypted inputs. This is the recommended approach for now as the automatic conversion is not mature yet. There are several models with their encrypted wrappers in ChemXor that can be used as examples.
 
 ```python
+# Pytorch lightning model
+# Adapted from https://github.dev/OpenMined/TenSEAL/blob/6516f215a0171fd9ad70f60f2f9b3d0c83d0d7c4/tutorials/Tutorial%204%20-%20Encrypted%20Convolution%20on%20MNIST.ipynb
+class ConvNet(pl.LightningModule):
+    """Cryptic Sage."""
 
+    def __init__(self: "ConvNet", hidden: int = 64, output: int = 10) -> None:
+        """Init."""
+        super().__init__()
+        self.hidden = hidden
+        self.output = output
+        self.conv1 = nn.Conv2d(1, 4, kernel_size=7, padding=0, stride=3)
+        self.fc1 = nn.Linear(256, hidden)
+        self.fc2 = nn.Linear(hidden, output)
+
+    def forward(self: "ConvNet", x: Any) -> Any:
+        """Forward function.
+
+        Args:
+            x (Any): model input
+
+        Returns:
+            Any: model output
+        """
+        x = self.conv1(x)
+        # the model uses the square activation function
+        x = x * x
+        # flattening while keeping the batch axis
+        x = x.view(-1, 256)
+        x = self.fc1(x)
+        x = x * x
+        x = self.fc2(x)
+        return x
+
+# Encrypted wrapper
+# Adapted from https://github.dev/OpenMined/TenSEAL/blob/6516f215a0171fd9ad70f60f2f9b3d0c83d0d7c4/tutorials/Tutorial%204%20-%20Encrypted%20Convolution%20on%20MNIST.ipynb
+class EncryptedConvNet(pl.LightningModule):
+    """Encrypted ConvNet."""
+
+    def __init__(self: "EncryptedConvNet", model: ConvNet) -> None:
+        """Init."""
+        super().__init__()
+
+        self.conv1_weight = model.conv1.weight.data.view(
+            model.conv1.out_channels,
+            model.conv1.kernel_size[0],
+            model.conv1.kernel_size[1],
+        ).tolist()
+        self.conv1_bias = model.conv1.bias.data.tolist()
+
+        self.fc1_weight = model.fc1.weight.T.data.tolist()
+        self.fc1_bias = model.fc1.bias.data.tolist()
+
+        self.fc2_weight = model.fc2.weight.T.data.tolist()
+        self.fc2_bias = model.fc2.bias.data.tolist()
+
+    def forward(self: "EncryptedConvNet", x: Any, windows_nb: int) -> Any:
+        """Forward function.
+
+        Args:
+            x (Any): model input
+            windows_nb (int): window size.
+
+        Returns:
+            Any: model output
+        """
+        # conv layer
+        enc_channels = []
+        for kernel, bias in zip(self.conv1_weight, self.conv1_bias):
+            y = x.conv2d_im2col(kernel, windows_nb) + bias
+            enc_channels.append(y)
+        # pack all channels into a single flattened vector
+        enc_x = ts.CKKSVector.pack_vectors(enc_channels)
+        # square activation
+        enc_x.square_()
+        # fc1 layer
+        enc_x = enc_x.mm(self.fc1_weight) + self.fc1_bias
+        # square activation
+        enc_x.square_()
+        # fc2 layer
+        enc_x = enc_x.mm(self.fc2_weight) + self.fc2_bias
+        return enc_x
+```
+
+A few things to note here:
+
+* We converted Pytorch tensors to a list in the encrypted wrapper. This is required as Pytorch tensors are not compatible with TenSeal encrypted tensors.
+* We are not using the standard ReLU activation. CKKS encryption scheme cannot evaluate non-linear piecewise functions. So, either alternative activation functions can be used or polynomial approximations of non-linear activation functions can be used.
+
+#### Serve models
+
+```python
 from chemxor.service import create_model_server
 
 # `create_model_server` returns a flask app
@@ -65,7 +212,7 @@ if __name__ == "__main__":
     flask_app.run()
 ```
 
-Query models
+#### Query models
 
 ```bash
 chemxor query -i [input file path] [model url]
