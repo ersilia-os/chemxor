@@ -218,6 +218,10 @@ if __name__ == "__main__":
 chemxor query -i [input file path] [model url]
 ```
 
+#### Distilled models
+
+To overcome the performance limitations of FHE, we are using ChemXor to create simpler distilled models from larger complex models. The distilled models accept inputs as molecules encoded as 32 x 32 images and predict the properties of these molecules. This work is still under progress.
+
 ## Developing
 
 We use poetry to manage project dependecies. Use poetry to install project in editable mode.
