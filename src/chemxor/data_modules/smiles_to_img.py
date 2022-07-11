@@ -101,7 +101,7 @@ class SmilesToImgDataset(Dataset):
 
 
 class SmilesToImgDataModule(pl.LightningDataModule):
-    """OSM data module."""
+    """SmilesToImg data module."""
 
     def __init__(
         self: "SmilesToImgDataset",
