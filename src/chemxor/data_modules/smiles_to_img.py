@@ -46,7 +46,7 @@ class SmilesToImgDataset(Dataset):
         self.target_transform = target_transform
         # load the transformer
         self.grid_transformer = joblib.load(
-            project_root_path.joinpath("data/models/grid_transformer.joblib")
+            project_root_path.joinpath("data/06_models/grid_transformer.joblib")
         )
 
     def __len__(self: "SmilesToImgDataset") -> int:
