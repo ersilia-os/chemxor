@@ -1,0 +1,2 @@
+in_path: data/01_raw/ModelPreds/eos2r5a/ersilia_output.csv
+out_path: data/01_raw/ModelPreds/eos2r5a/sm_to_imgs.csv
