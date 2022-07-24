@@ -87,7 +87,7 @@ def convert_smiles_to_imgs(
         pd.DataFrame(molecule_imgs.reshape(-1, 1024), dtype=int).to_csv(
             project_root_path.joinpath(in_path)
             .parents[0]
-            .joinpath(f"sm_to_imgs_{i}")
+            .joinpath(f"sm_to_imgs_{i}.csv.gz")
             .absolute(),
             index=False,
             compression="gzip",
