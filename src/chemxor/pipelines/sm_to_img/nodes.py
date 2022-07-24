@@ -67,7 +67,7 @@ def convert_smiles_to_imgs(
     """
     df_full = pd.read_csv(project_root_path.joinpath(in_path).absolute())
     try:
-        molecule_imgs_df = pd.read_csv(out_path.absolute())
+        molecule_imgs_df = pd.read_csv(out_path.absolute(), header=None)
     except Exception:
         molecule_imgs_df = pd.DataFrame()
 
