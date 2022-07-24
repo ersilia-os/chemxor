@@ -59,5 +59,5 @@ class EncConvDataset(Dataset):
             self.kernel_shape[1],
             self.stride,
         )
-        enc_y = ts.ckks_tensor(self.context, items[1])
-        return tuple(enc_x, enc_y, windows_nb)
+        enc_y = ts.ckks_tensor(self.context, [items[1]])
+        return tuple([enc_x, enc_y, windows_nb])
