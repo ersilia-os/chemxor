@@ -75,7 +75,7 @@ def convert_smiles_to_imgs(
     split_tuples = [(splits[i], splits[i + 1]) for i in range(len(splits) - 1)]
     dfs = [df_full.iloc[start:end] for start, end in split_tuples]
     grid_transformer = joblib.load(transformer_path)
-    for i, df in tqdm(enumerate(dfs)):
+    for i, df in enumerate(tqdm(dfs)):
         smiles = df["smiles"]
         R = []
         for chunk in tqdm(chunker(smiles, 10000)):
@@ -84,12 +84,13 @@ def convert_smiles_to_imgs(
             R += [e]
         ecfp = np.concatenate(R)
         molecule_imgs = grid_transformer.transform(ecfp)
-        pd.DataFrame(molecule_imgs.reshape(-1, 1024)).to_csv(
+        pd.DataFrame(molecule_imgs.reshape(-1, 1024), dtype=int).to_csv(
             project_root_path.joinpath(in_path)
             .parents[0]
             .joinpath(f"sm_to_imgs_{i}.csv")
             .absolute(),
             index=False,
+            compression="gzip",
         )
         del molecule_imgs
 
