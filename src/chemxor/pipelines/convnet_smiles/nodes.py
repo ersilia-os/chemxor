@@ -15,7 +15,7 @@ def init_smiles_data_module() -> pl.LightningDataModule:
 
 def init_convnet_model() -> pl.LightningModule:
     """Initialize Convnet model."""
-    return ConvNet()
+    return ConvNet(output=1)
 
 
 def train_convnet_model(
@@ -26,7 +26,7 @@ def train_convnet_model(
     checkpoint_callback = pl.callbacks.ModelCheckpoint(
         dirpath=get_project_root_path().joinpath("data/06_models/convnet-smiles"),
         save_top_k=3,
-        monitor="validation_loss",
+        monitor="VAL_Loss",
     )
     trainer = pl.Trainer(callbacks=[checkpoint_callback], accelerator="auto")
     trainer.fit(model=model, datamodule=data_module)
