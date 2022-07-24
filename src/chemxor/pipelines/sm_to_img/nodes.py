@@ -67,11 +67,11 @@ def convert_smiles_to_imgs(
         in_path (Path): Input CSV path
         out_path (Path): Output CSV path
         transformer_path (Path): Path of transformer. Defaults to transformer_path.
-        df_chunks (int): df chunks to create. Defaults to 4.
+        df_chunks (int): df chunks to create. Defaults to 100.
     """
     df_full = pd.read_csv(project_root_path.joinpath(in_path).absolute())
     df_len = len(df_full)
-    splits = [x for x in range(0, df_len + 1, df_len + 1 // df_chunks)]
+    splits = [x for x in range(0, df_len + 1, (df_len + 1) // df_chunks)]
     split_tuples = [(splits[i], splits[i + 1]) for i in range(len(splits) - 1)]
     dfs = [df_full.iloc[start:end] for start, end in split_tuples]
     for df in tqdm(dfs):
