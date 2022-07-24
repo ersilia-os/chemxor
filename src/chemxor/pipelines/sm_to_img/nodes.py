@@ -67,11 +67,11 @@ def convert_smiles_to_imgs(
     """
     df_full = pd.read_csv(project_root_path.joinpath(in_path).absolute())
     try:
-        molecule_imgs_df = pd.read_csv(out_path.absolute(), header=None)
+        molecule_imgs_df = pd.read_csv(out_path.absolute())
     except Exception:
         molecule_imgs_df = pd.DataFrame()
 
-    smiles = df_full[0]
+    smiles = df_full["smiles"]
     R = []
     for chunk in tqdm(chunker(smiles, 10000)):
         mols = [Chem.MolFromSmiles(smi) for smi in chunk]
