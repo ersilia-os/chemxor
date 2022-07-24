@@ -74,17 +74,8 @@ def convert_smiles_to_imgs(
     splits = [x for x in range(0, df_len + 1, (df_len + 1) // df_chunks)]
     split_tuples = [(splits[i], splits[i + 1]) for i in range(len(splits) - 1)]
     dfs = [df_full.iloc[start:end] for start, end in split_tuples]
+    grid_transformer = joblib.load(transformer_path)
     for i, df in tqdm(enumerate(dfs)):
-        try:
-            molecule_imgs_df = pd.read_csv(
-                project_root_path.joinpath(in_path)
-                .parents[0]
-                .joinpath(f"sm_to_imgs_{i}.csv")
-                .absolute()
-            )
-        except Exception:
-            molecule_imgs_df = pd.DataFrame()
-
         smiles = df["smiles"]
         R = []
         for chunk in tqdm(chunker(smiles, 10000)):
@@ -92,13 +83,8 @@ def convert_smiles_to_imgs(
             e = ecfp_counts(mols)
             R += [e]
         ecfp = np.concatenate(R)
-
-        grid_transformer = joblib.load(transformer_path)
-
         molecule_imgs = grid_transformer.transform(ecfp)
-        pd.concat(
-            [molecule_imgs_df, pd.DataFrame(molecule_imgs.reshape(-1, 1024))]
-        ).to_csv(
+        pd.DataFrame(molecule_imgs.reshape(-1, 1024)).to_csv(
             project_root_path.joinpath(in_path)
             .parents[0]
             .joinpath(f"sm_to_imgs_{i}.csv")
@@ -106,7 +92,6 @@ def convert_smiles_to_imgs(
             index=False,
         )
         del molecule_imgs
-        del molecule_imgs_df
 
 
 convert_smiles_to_imgs_node = node(
