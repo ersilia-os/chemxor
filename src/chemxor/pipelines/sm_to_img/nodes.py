@@ -74,9 +74,11 @@ def convert_smiles_to_imgs(
     splits = [x for x in range(0, df_len + 1, df_len + 1 // df_chunks)]
     split_tuples = [(splits[i], splits[i + 1]) for i in range(len(splits) - 1)]
     dfs = [df_full.iloc[start:end] for start, end in split_tuples]
-    for df in dfs:
+    for df in tqdm(dfs):
         try:
-            molecule_imgs_df = pd.read_csv(out_path.absolute())
+            molecule_imgs_df = pd.read_csv(
+                project_root_path.joinpath(out_path).absolute()
+            )
         except Exception:
             molecule_imgs_df = pd.DataFrame()
 
