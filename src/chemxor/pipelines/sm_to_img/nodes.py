@@ -74,10 +74,13 @@ def convert_smiles_to_imgs(
     splits = [x for x in range(0, df_len + 1, (df_len + 1) // df_chunks)]
     split_tuples = [(splits[i], splits[i + 1]) for i in range(len(splits) - 1)]
     dfs = [df_full.iloc[start:end] for start, end in split_tuples]
-    for df in tqdm(dfs):
+    for i, df in tqdm(enumerate(dfs)):
         try:
             molecule_imgs_df = pd.read_csv(
-                project_root_path.joinpath(out_path).absolute()
+                project_root_path.joinpath(in_path)
+                .parents[0]
+                .joinpath(f"sm_to_imgs_{i}.csv")
+                .absolute()
             )
         except Exception:
             molecule_imgs_df = pd.DataFrame()
@@ -93,9 +96,17 @@ def convert_smiles_to_imgs(
         grid_transformer = joblib.load(transformer_path)
 
         molecule_imgs = grid_transformer.transform(ecfp)
-        molecule_imgs_df.append(pd.DataFrame(molecule_imgs.reshape(-1, 1024))).to_csv(
-            project_root_path.joinpath(out_path).absolute(), index=False
+        pd.concat(
+            [molecule_imgs_df, pd.DataFrame(molecule_imgs.reshape(-1, 1024))]
+        ).to_csv(
+            project_root_path.joinpath(in_path)
+            .parents[0]
+            .joinpath(f"sm_to_imgs_{i}.csv")
+            .absolute(),
+            index=False,
         )
+        del molecule_imgs
+        del molecule_imgs_df
 
 
 convert_smiles_to_imgs_node = node(
