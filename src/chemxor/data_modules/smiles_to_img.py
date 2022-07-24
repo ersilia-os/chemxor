@@ -2,7 +2,7 @@
 
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import joblib
 import numpy as np
@@ -12,9 +12,10 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 import tenseal as ts
 import torch as t
+from torch import nn
 from torch.utils.data import DataLoader, Dataset, random_split
 
-from chemxor.data_modules.enc_dataset import EncDataset
+from chemxor.data_modules.enc_conv_dataset import EncConvDataset
 from chemxor.utils import get_project_root_path
 
 project_root_path = get_project_root_path()
@@ -55,7 +56,7 @@ class SmilesToImgDataset(Dataset):
         Returns:
             int: Length of the dataset.
         """
-        return len(self.train_set_df)
+        return len(self.df_full)
 
     def __getitem__(self: "SmilesToImgDataset", index: int) -> Any:
         """Get item from the dataset.
@@ -70,7 +71,7 @@ class SmilesToImgDataset(Dataset):
         molecule_smile = self.df_full.iloc[index][1]
 
         # Extract label
-        label = t.tensor(self.df_full.iloc[index][0])
+        label = t.tensor(self.df_full.iloc[index][0], dtype=t.float)
 
         # Create molecule figerprints
         molecule_fp = AllChem.GetMorganFingerprint(
@@ -83,10 +84,12 @@ class SmilesToImgDataset(Dataset):
         # Truncate fp to len 1024
         molecule_fp_truncated = np.zeros((1024), np.uint8)
         for idx, v in molecule_fp.GetNonzeroElements().items():
-            molecule_fp_truncated[idx] += int(v)
+            nidx = idx % 1024
+            molecule_fp_truncated[nidx] += int(v)
 
         # Create input image
-        molecule_img = self.grid_transformer([molecule_fp_truncated])[0]
+        molecule_img = self.grid_transformer.transform([molecule_fp_truncated])[0]
+        molecule_img = t.tensor(molecule_img, dtype=t.float).reshape(1, 32, 32)
 
         # Apply input transforms
         if self.transform:
@@ -106,9 +109,10 @@ class SmilesToImgDataModule(pl.LightningDataModule):
     def __init__(
         self: "SmilesToImgDataset",
         csv_path: Path = default_path,
-        batch_size: int = 10,
+        batch_size: int = 32,
         transform: Optional[Any] = None,
         target_transform: Optional[Any] = None,
+        model: Optional[Union[nn.Module, pl.LightningModule]] = None,
     ) -> None:
         """OSM data module init.
 
@@ -118,12 +122,14 @@ class SmilesToImgDataModule(pl.LightningDataModule):
             batch_size (int): batch size. Defaults to 32.
             transform (Optional[Any]): Tranforms for the inputs. Defaults to None.
             target_transform (Optional[Any]): Transforms for the target. Defaults to None.
+            model (Optional[Union[nn.Module, pl.LightningModule]]): Model. Default to None.
         """
         super().__init__()
         self.csv_path = csv_path
         self.batch_size = batch_size
         self.transform = transform
         self.target_transform = target_transform
+        self.model = model
 
     def prepare_data(self: "SmilesToImgDataModule") -> None:
         """Prepare data."""
@@ -142,33 +148,22 @@ class SmilesToImgDataModule(pl.LightningDataModule):
             self.transform,
             self.target_transform,
         )
-        self.csv_train, self.csv_val = random_split(
-            csv_full, [270, 117], t.Generator().manual_seed(7777)
+
+        train_len = int(len(csv_full) * 0.7)
+        validate_len = int(len(csv_full) * 0.2)
+        test_len = int(len(csv_full) * 0.1)
+        others_len = len(csv_full) - train_len - validate_len - test_len
+        self.csv_train, self.csv_val, self.csv_test, _ = random_split(
+            csv_full,
+            [train_len, validate_len, test_len, others_len],
+            t.Generator().manual_seed(7777),
         )
 
         # hack for now, please fixme later
         self.enc_csv_train = deepcopy(self.csv_train)
-        self.csv_test = deepcopy(self.csv_val)
-        self.enc_csv_test = deepcopy(self.csv_val)
-        self.csv_predict = deepcopy(self.csv_val)
-        self.enc_csv_predict = deepcopy(self.csv_val)
-
-        # # split train into train and validation
-        # self.osm_train, self.osm_val = random_split(
-        #     self.osm_train,
-        #     [
-        #         int(len(self.osm_train) * 80),
-        #         len(self.osm_train) - int(len(self.osm_train) * 80),
-        #     ],
-        # )
-        # # split test into test and predict
-        # self.osm_test, self.osm_predict = random_split(
-        #     self.osm_test,
-        #     [
-        #         int(len(self.osm_test) * 80),
-        #         len(self.osm_test) - int(len(self.osm_test) * 80),
-        #     ],
-        # )
+        self.enc_csv_test = deepcopy(self.csv_test)
+        self.csv_predict = deepcopy(self.csv_test)
+        self.enc_csv_predict = deepcopy(self.csv_test)
 
     def train_dataloader(self: "SmilesToImgDataModule") -> DataLoader:
         """Train dataloader.
@@ -189,7 +184,13 @@ class SmilesToImgDataModule(pl.LightningDataModule):
         Returns:
             DataLoader: train dataloader
         """
-        enc_csv_train = EncDataset(context, self.enc_csv_train)
+        enc_csv_train = EncConvDataset(
+            context,
+            self.enc_csv_train,
+            self.model.conv1.kernel_size,
+            self.model.conv1.stride[0],
+            (32, 32),
+        )
         return DataLoader(enc_csv_train, batch_size=None)
 
     def val_dataloader(self: "SmilesToImgDataModule") -> DataLoader:
@@ -211,7 +212,13 @@ class SmilesToImgDataModule(pl.LightningDataModule):
         Returns:
             DataLoader: val dataloader
         """
-        enc_csv_val = EncDataset(context, self.enc_csv_val)
+        enc_csv_val = EncConvDataset(
+            context,
+            self.enc_csv_val,
+            self.model.conv1.kernel_size,
+            self.model.conv1.stride[0],
+            (32, 32),
+        )
         return DataLoader(enc_csv_val, batch_size=None)
 
     def test_dataloader(self: "SmilesToImgDataModule") -> DataLoader:
@@ -233,7 +240,13 @@ class SmilesToImgDataModule(pl.LightningDataModule):
         Returns:
             DataLoader: test dataloader
         """
-        enc_csv_test = EncDataset(context, self.enc_csv_test)
+        enc_csv_test = EncConvDataset(
+            context,
+            self.enc_csv_test,
+            self.model.conv1.kernel_size,
+            self.model.conv1.stride[0],
+            (32, 32),
+        )
         return DataLoader(enc_csv_test, batch_size=None)
 
     def predict_dataloader(self: "SmilesToImgDataModule") -> DataLoader:
@@ -255,7 +268,13 @@ class SmilesToImgDataModule(pl.LightningDataModule):
         Returns:
             DataLoader: predict dataloader
         """
-        enc_csv_predict = EncDataset(context, self.enc_csv_predict)
+        enc_csv_predict = EncConvDataset(
+            context,
+            self.enc_csv_predict,
+            self.model.conv1.kernel_size,
+            self.model.conv1.stride[0],
+            (32, 32),
+        )
         return DataLoader(enc_csv_predict, batch_size=None)
 
     def teardown(self: "SmilesToImgDataModule", stage: Optional[str] = None) -> None:
