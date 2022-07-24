@@ -103,6 +103,7 @@ def convert_smiles_to_imgs(
             .parents[0]
             .joinpath(f"sm_to_imgs_{i}.csv.gz")
             .absolute(),
+            index=False,
             compression="gzip",
         )
         split_tuple_index = split_tuple_index + 1
