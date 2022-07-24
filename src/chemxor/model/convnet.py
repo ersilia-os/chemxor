@@ -3,6 +3,7 @@
 from typing import Any
 
 import pytorch_lightning as pl
+import torch as t
 from torch import nn
 from torch.nn import functional as F
 from torch.optim import Adam, Optimizer
@@ -18,8 +19,8 @@ class ConvNet(pl.LightningModule):
         super().__init__()
         self.hidden = hidden
         self.output = output
-        self.conv1 = nn.Conv2d(1, 4, kernel_size=7, padding=0, stride=3)
-        self.fc1 = nn.Linear(256, hidden)
+        self.conv1 = nn.Conv2d(1, 28, kernel_size=3, padding=0, stride=3)
+        self.fc1 = nn.Linear(2800, hidden)
         self.fc2 = nn.Linear(hidden, output)
 
         # Metrics
@@ -30,9 +31,9 @@ class ConvNet(pl.LightningModule):
                 Recall(num_classes=output, average="macro"),
             ]
         )
-        self.train_metrics = metrics.clone(prefix="train_")
-        self.valid_metrics = metrics.clone(prefix="val_")
-        self.test_metrics = metrics.clone(prefix="test_")
+        self.train_metrics = metrics.clone(prefix="TRAIN_")
+        self.valid_metrics = metrics.clone(prefix="VAL_")
+        self.test_metrics = metrics.clone(prefix="TEST_")
 
     def forward(self: "ConvNet", x: Any) -> Any:
         """Forward function.
@@ -47,7 +48,7 @@ class ConvNet(pl.LightningModule):
         # the model uses the square activation function
         x = x * x
         # flattening while keeping the batch axis
-        x = x.view(-1, 256)
+        x = x.view(x.shape[0], -1)
         x = self.fc1(x)
         x = x * x
         x = self.fc2(x)
@@ -65,12 +66,12 @@ class ConvNet(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        loss = F.cross_entropy(output, y)
+        loss = F.cross_entropy(output, y.type(t.long))
 
         # Logging to TensorBoard by default
-        self.log("train_loss", loss)
+        self.log("TRAIN_Loss", loss)
         # Logging metrics
-        metrics = self.train_metrics(output, y)
+        metrics = self.train_metrics(output, y.type(t.int))
         self.log_dict(metrics)
         return loss
 
@@ -83,13 +84,12 @@ class ConvNet(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        loss = F.cross_entropy(output, y)
-
+        loss = F.cross_entropy(output, y.type(t.long))
         # Logging to TensorBoard by default
-        self.log("validation_loss", loss)
+        self.log("VAL_Loss", loss)
 
         # Logging metrics
-        metrics = self.valid_metrics(output, y)
+        metrics = self.valid_metrics(output, y.type(t.int))
         self.log_dict(metrics)
 
     def test_step(self: "ConvNet", batch: Any, batch_idx: Any) -> None:
@@ -101,13 +101,13 @@ class ConvNet(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        loss = F.cross_entropy(output, y)
+        loss = F.cross_entropy(output, y.type(t.long))
 
         # Logging to TensorBoard by default
-        self.log("test_loss", loss)
+        self.log("TEST_Loss", loss)
 
         # Logging metrics
-        metrics = self.test_metrics(output, y)
+        metrics = self.test_metrics(output, y.type(t.int))
         self.log_dict(metrics)
 
     def configure_optimizers(self: "ConvNet") -> Optimizer:
