@@ -87,6 +87,6 @@ def convert_smiles_to_imgs(
 
 convert_smiles_to_imgs_node = node(
     func=convert_smiles_to_imgs,
-    inputs=["parmas:in_path", "params:out_path"],
+    inputs=["params:in_path", "params:out_path"],
     outputs=None,
 )
