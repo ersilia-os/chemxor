@@ -65,7 +65,7 @@ def convert_smiles_to_imgs(
         out_path (Path): Output CSV path
         transformer_path (Path): Path of transformer. Defaults to transformer_path.
     """
-    df_full = pd.read_csv(in_path.absolute())
+    df_full = pd.read_csv(project_root_path.joinpath(in_path).absolute())
     try:
         molecule_imgs_df = pd.read_csv(out_path.absolute())
     except Exception:
@@ -82,7 +82,9 @@ def convert_smiles_to_imgs(
     grid_transformer = joblib.load(transformer_path)
 
     molecule_imgs = grid_transformer.transform(ecfp)
-    molecule_imgs_df.append(molecule_imgs).to_csv(out_path, index=False)
+    molecule_imgs_df.append(molecule_imgs).to_csv(
+        project_root_path.joinpath(out_path).absolute(), index=False
+    )
 
 
 convert_smiles_to_imgs_node = node(
