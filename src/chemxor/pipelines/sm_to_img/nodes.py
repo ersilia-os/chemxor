@@ -59,7 +59,7 @@ def convert_smiles_to_imgs(
     in_path: Path,
     out_path: Path,
     transformer_path: Path = transformer_path,
-    df_chunks: int = 4,
+    df_chunks: int = 100,
 ) -> None:
     """Convert Smiles to Images.
 
@@ -71,7 +71,7 @@ def convert_smiles_to_imgs(
     """
     df_full = pd.read_csv(project_root_path.joinpath(in_path).absolute())
     df_len = len(df_full)
-    splits = [x for x in range(0, df_len, df_len // df_chunks)]
+    splits = [x for x in range(0, df_len + 1, df_len + 1 // df_chunks)]
     split_tuples = [(splits[i], splits[i + 1]) for i in range(len(splits) - 1)]
     dfs = [df_full.iloc[start:end] for start, end in split_tuples]
     for df in dfs:
@@ -91,7 +91,7 @@ def convert_smiles_to_imgs(
         grid_transformer = joblib.load(transformer_path)
 
         molecule_imgs = grid_transformer.transform(ecfp)
-        molecule_imgs_df.append(molecule_imgs).to_csv(
+        molecule_imgs_df.append(pd.DataFrame(molecule_imgs.reshape(-1, 1024))).to_csv(
             project_root_path.joinpath(out_path).absolute(), index=False
         )
 
