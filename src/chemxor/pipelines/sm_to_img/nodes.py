@@ -56,7 +56,10 @@ def ecfp_counts(mols: List) -> List:
 
 
 def convert_smiles_to_imgs(
-    in_path: Path, out_path: Path, transformer_path: Path = transformer_path
+    in_path: Path,
+    out_path: Path,
+    transformer_path: Path = transformer_path,
+    df_chunks: int = 4,
 ) -> None:
     """Convert Smiles to Images.
 
@@ -64,27 +67,33 @@ def convert_smiles_to_imgs(
         in_path (Path): Input CSV path
         out_path (Path): Output CSV path
         transformer_path (Path): Path of transformer. Defaults to transformer_path.
+        df_chunks (int): df chunks to create. Defaults to 4.
     """
     df_full = pd.read_csv(project_root_path.joinpath(in_path).absolute())
-    try:
-        molecule_imgs_df = pd.read_csv(out_path.absolute())
-    except Exception:
-        molecule_imgs_df = pd.DataFrame()
+    df_len = len(df_full)
+    splits = [x for x in range(0, df_len, df_len // df_chunks)]
+    split_tuples = [(splits[i], splits[i + 1]) for i in range(len(splits) - 1)]
+    dfs = [df_full.iloc[start:end] for start, end in split_tuples]
+    for df in dfs:
+        try:
+            molecule_imgs_df = pd.read_csv(out_path.absolute())
+        except Exception:
+            molecule_imgs_df = pd.DataFrame()
 
-    smiles = df_full["smiles"]
-    R = []
-    for chunk in tqdm(chunker(smiles, 10000)):
-        mols = [Chem.MolFromSmiles(smi) for smi in chunk]
-        e = ecfp_counts(mols)
-        R += [e]
-    ecfp = np.concatenate(R)
+        smiles = df["smiles"]
+        R = []
+        for chunk in tqdm(chunker(smiles, 10000)):
+            mols = [Chem.MolFromSmiles(smi) for smi in chunk]
+            e = ecfp_counts(mols)
+            R += [e]
+        ecfp = np.concatenate(R)
 
-    grid_transformer = joblib.load(transformer_path)
+        grid_transformer = joblib.load(transformer_path)
 
-    molecule_imgs = grid_transformer.transform(ecfp)
-    molecule_imgs_df.append(molecule_imgs).to_csv(
-        project_root_path.joinpath(out_path).absolute(), index=False
-    )
+        molecule_imgs = grid_transformer.transform(ecfp)
+        molecule_imgs_df.append(molecule_imgs).to_csv(
+            project_root_path.joinpath(out_path).absolute(), index=False
+        )
 
 
 convert_smiles_to_imgs_node = node(
