@@ -86,7 +86,8 @@ def convert_smiles_to_imgs(
         ecfp = np.concatenate(R)
         molecule_imgs = grid_transformer.transform(ecfp)
         imgs_df = pd.DataFrame(molecule_imgs.reshape(-1, 1024), dtype=int)
-        target_df = df.iloc[:, 0]
+        target_df = pd.DataFrame(df.iloc[:, 0])
+        target_df.columns = ["target"]
         global_index_df = pd.DataFrame(
             [
                 x
