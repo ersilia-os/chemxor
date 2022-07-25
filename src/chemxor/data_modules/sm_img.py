@@ -1,11 +1,13 @@
 """SmilesImg data module."""
 
-from copy import deepcopy
+from glob import glob
+import math
+import re
 from pathlib import Path
 from typing import Any, Optional, Union
 
-import dask.dataframe as dd
 import pandas as pd
+from pyarrow import feather
 import pytorch_lightning as pl
 import tenseal as ts
 import torch as t
@@ -43,9 +45,24 @@ class SmilesImgDataset(Dataset):
 
         """
         self.preds_df_full = pd.read_csv(preds_csv_path.absolute())
-        self.imgs_df_full = dd.read_csv(imgs_df_dir.joinpath("sm_to_imgs_*"))
+        self.imgs_dfs_list = [
+            path for path in glob(f"{imgs_df_dir.absolute()}/sm_to_imgs_*")
+        ]
+        self.imgs_dfs_list = sorted(self.imgs_dfs_list, key=self._get_order)
+        self.imgs_dfs_len = len(self.imgs_dfs_list)
+        self.df_len = len(self.preds_df_full)
+        self.splits = [
+            x for x in range(0, self.df_len + 1, (self.df_len + 1) // self.imgs_dfs_len)
+        ]
         self.transform = transform
         self.target_transform = target_transform
+
+    def _get_order(self: "SmilesImgDataset", file: str) -> int:
+        file_pattern = re.compile(r".*?(\d+).*?")
+        match = file_pattern.match(Path(file).name)
+        if not match:
+            return math.inf
+        return int(match.groups()[0])
 
     def __len__(self: "SmilesImgDataset") -> int:
         """Length of the dataset.
@@ -64,14 +81,24 @@ class SmilesImgDataset(Dataset):
         Returns:
             Any: Item
         """
-        # Extract smile string
-        molecule_img = t.tensor(self.imgs_df_full.iloc[index], dtype=t.float).reshape(
-            1, 32, 32
+        # determine partition for index
+        partition = 0
+        for i, split in enumerate(self.splits):
+            if index < split:
+                partition = i - 1
+                break
+        # determine chunk of the partition
+        df = feather.read_feather(self.imgs_dfs_list[partition]).set_index(
+            "global_index"
         )
+        # Extract smile string
+        molecule_img = t.tensor(
+            df.loc[index, [str(x) for x in range(0, 1024)]],
+            dtype=t.float,
+        ).reshape(1, 32, 32)
 
         # Extract target
-        label = t.tensor(self.preds_df_full.iloc[index][0], dtype=t.float)
-
+        label = t.tensor(df.loc[index, ["target"]], dtype=t.float)
         # Apply input transforms
         if self.transform:
             molecule_img = self.transform(molecule_img)
@@ -89,7 +116,7 @@ class SmilesImgDataModule(pl.LightningDataModule):
 
     def __init__(
         self: "SmilesImgDataset",
-        csv_path: Path = default_path,
+        preds_csv_path: Path = default_path,
         imgs_df_dir: Path = default_path.parents[0],
         batch_size: int = 32,
         transform: Optional[Any] = None,
@@ -99,7 +126,7 @@ class SmilesImgDataModule(pl.LightningDataModule):
         """OSM data module init.
 
         Args:
-            csv_path (Path): csv path.
+            preds_csv_path (Path): csv path.
                 Defaults to default_path.
             imgs_df_dir (Path): images csv path.
                 Defaults to default_path.parents[0].
@@ -109,7 +136,8 @@ class SmilesImgDataModule(pl.LightningDataModule):
             model (Optional[Union[nn.Module, pl.LightningModule]]): Model. Default to None.
         """
         super().__init__()
-        self.csv_path = csv_path
+        self.preds_csv_path = preds_csv_path
+        self.imgs_df_dir = imgs_df_dir
         self.batch_size = batch_size
         self.transform = transform
         self.target_transform = target_transform
@@ -127,26 +155,27 @@ class SmilesImgDataModule(pl.LightningDataModule):
         Args:
             stage (Optional[str]): Optional pipeline state
         """
-        csv_full = SmilesImgDataset(
-            self.csv_path,
+        self.csv_full = SmilesImgDataset(
+            self.preds_csv_path,
+            self.imgs_df_dir,
             self.transform,
             self.target_transform,
         )
 
-        train_len = int(len(csv_full) * 0.8)
-        validate_len = int(len(csv_full) * 0.1)
-        test_len = int(len(csv_full) * 0.1)
-        others_len = len(csv_full) - train_len - validate_len - test_len
+        train_len = int(len(self.csv_full) * 0.8)
+        validate_len = int(len(self.csv_full) * 0.1)
+        test_len = int(len(self.csv_full) * 0.1)
+        others_len = len(self.csv_full) - train_len - validate_len - test_len
         self.csv_train, self.csv_val, self.csv_test, _ = random_split(
-            csv_full,
+            self.csv_full,
             [train_len, validate_len, test_len, others_len],
         )
 
         # hack for now, please fixme later
-        self.enc_csv_train = deepcopy(self.csv_train)
-        self.enc_csv_test = deepcopy(self.csv_test)
-        self.csv_predict = deepcopy(self.csv_test)
-        self.enc_csv_predict = deepcopy(self.csv_test)
+        self.enc_csv_train = self.csv_train
+        self.enc_csv_test = self.csv_test
+        self.csv_predict = self.csv_test
+        self.enc_csv_predict = self.csv_test
 
     def train_dataloader(self: "SmilesImgDataModule") -> DataLoader:
         """Train dataloader.
