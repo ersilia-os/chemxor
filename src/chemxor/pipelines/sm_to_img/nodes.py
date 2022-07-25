@@ -1,9 +1,10 @@
 """Smiles to Images nodes."""
 
 from pathlib import Path
-from typing import List
+from typing import Any, List
 
 import joblib
+from joblib import cpu_count, delayed, Parallel
 from kedro.pipeline import node
 import numpy as np
 import pandas as pd
@@ -76,38 +77,53 @@ def convert_smiles_to_imgs(
     split_tuples = [(splits[i], splits[i + 1]) for i in range(len(splits) - 1)]
     dfs = [df_full.iloc[start:end] for start, end in split_tuples]
     grid_transformer = joblib.load(transformer_path)
-    split_tuple_index = 0
-    for i, df in enumerate(tqdm(dfs)):
-        smiles = df["smiles"]
-        R = []
-        for chunk in tqdm(chunker(smiles, 100)):
-            mols = [Chem.MolFromSmiles(smi) for smi in chunk]
-            e = ecfp_counts(mols)
-            R += [e]
-        ecfp = np.concatenate(R)
-        molecule_imgs = grid_transformer.transform(ecfp)
-        imgs_df = pd.DataFrame(molecule_imgs.reshape(-1, 1024))
-        global_index_df = pd.DataFrame(
-            [
-                x
-                for x in range(
-                    split_tuples[split_tuple_index][0],
-                    split_tuples[split_tuple_index][1],
-                )
-            ],
-            columns=["global_index"],
-        )
-        global_index_df["target"] = df.iloc[:, 0].to_list()
-        global_index_df[[x for x in range(0, 1024)]] = imgs_df
-        feather.write_feather(
-            global_index_df,
-            project_root_path.joinpath(in_path)
-            .parents[0]
-            .joinpath(f"sm_to_imgs_{i}.feather.lz4")
-            .absolute(),
-            compression="lz4",
-        )
-        split_tuple_index = split_tuple_index + 1
+    Parallel(n_jobs=cpu_count())(
+        delayed(chunked_df_to_feather)(df, i, grid_transformer, in_path, split_tuples)
+        for i, df in enumerate(tqdm(dfs))
+    )
+
+
+def chunked_df_to_feather(
+    df: pd.DataFrame, i: int, grid_transformer: Any, in_path: Path, split_tuples: tuple
+) -> None:
+    """Save chunked dfs to feather files.
+
+    Args:
+        df (pd.DataFrame): pandas Dataframe
+        i (int): dataframe position
+        grid_transformer (Any): grid transformer
+        in_path (Path): Path
+        split_tuples (tuple): Split ranges
+    """
+    smiles = df["smiles"]
+    R = []
+    for chunk in tqdm(chunker(smiles, 100)):
+        mols = [Chem.MolFromSmiles(smi) for smi in chunk]
+        e = ecfp_counts(mols)
+        R += [e]
+    ecfp = np.concatenate(R)
+    molecule_imgs = grid_transformer.transform(ecfp)
+    imgs_df = pd.DataFrame(molecule_imgs.reshape(-1, 1024))
+    global_index_df = pd.DataFrame(
+        [
+            x
+            for x in range(
+                split_tuples[i][0],
+                split_tuples[i][1],
+            )
+        ],
+        columns=["global_index"],
+    )
+    global_index_df["target"] = df.iloc[:, 0].to_list()
+    global_index_df[[x for x in range(0, 1024)]] = imgs_df
+    feather.write_feather(
+        global_index_df,
+        project_root_path.joinpath(in_path)
+        .parents[0]
+        .joinpath(f"sm_to_imgs_{i}.feather.lz4")
+        .absolute(),
+        compression="lz4",
+    )
 
 
 convert_smiles_to_imgs_node = node(
