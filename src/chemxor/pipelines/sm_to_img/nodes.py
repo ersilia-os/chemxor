@@ -85,9 +85,7 @@ def convert_smiles_to_imgs(
             R += [e]
         ecfp = np.concatenate(R)
         molecule_imgs = grid_transformer.transform(ecfp)
-        imgs_df = pd.DataFrame(molecule_imgs.reshape(-1, 1024), dtype=int)
-        target_df = pd.DataFrame(df.iloc[:, 0])
-        target_df.columns = ["target"]
+        imgs_df = pd.DataFrame(molecule_imgs.reshape(-1, 1024))
         global_index_df = pd.DataFrame(
             [
                 x
@@ -98,7 +96,9 @@ def convert_smiles_to_imgs(
             ],
             columns=["global_index"],
         )
-        global_index_df.join(target_df).join(imgs_df).to_csv(
+        global_index_df["target"] = df.iloc[:, 0]
+        global_index_df[[x for x in range(0, 1024)]] = imgs_df
+        global_index_df.to_csv(
             project_root_path.joinpath(in_path)
             .parents[0]
             .joinpath(f"sm_to_imgs_{i}.csv.gz")
