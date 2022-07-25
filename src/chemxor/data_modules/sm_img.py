@@ -2,8 +2,8 @@
 
 from glob import glob
 import math
-import re
 from pathlib import Path
+import re
 from typing import Any, Optional, Union
 
 import pandas as pd

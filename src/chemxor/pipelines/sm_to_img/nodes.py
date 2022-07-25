@@ -1,4 +1,4 @@
-"Smiles to Images nodes."
+"""Smiles to Images nodes."""
 
 from pathlib import Path
 from typing import List
@@ -80,7 +80,7 @@ def convert_smiles_to_imgs(
     for i, df in enumerate(tqdm(dfs)):
         smiles = df["smiles"]
         R = []
-        for chunk in tqdm(chunker(smiles, 10000)):
+        for chunk in tqdm(chunker(smiles, 100)):
             mols = [Chem.MolFromSmiles(smi) for smi in chunk]
             e = ecfp_counts(mols)
             R += [e]
