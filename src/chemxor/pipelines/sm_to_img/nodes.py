@@ -7,6 +7,7 @@ import joblib
 from kedro.pipeline import node
 import numpy as np
 import pandas as pd
+import pyarrow.feather as feather
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from tqdm import tqdm
@@ -59,7 +60,7 @@ def convert_smiles_to_imgs(
     in_path: Path,
     out_path: Path,
     transformer_path: Path = transformer_path,
-    df_chunks: int = 100,
+    df_chunks: int = 10000,
 ) -> None:
     """Convert Smiles to Images.
 
@@ -96,15 +97,15 @@ def convert_smiles_to_imgs(
             ],
             columns=["global_index"],
         )
-        global_index_df["target"] = df.iloc[:, 0]
+        global_index_df["target"] = df.iloc[:, 0].to_list()
         global_index_df[[x for x in range(0, 1024)]] = imgs_df
-        global_index_df.to_csv(
+        feather.write_feather(
+            global_index_df,
             project_root_path.joinpath(in_path)
             .parents[0]
-            .joinpath(f"sm_to_imgs_{i}.csv.gz")
+            .joinpath(f"sm_to_imgs_{i}.feather.lz4")
             .absolute(),
-            index=False,
-            compression="gzip",
+            compression="lz4",
         )
         split_tuple_index = split_tuple_index + 1
 
