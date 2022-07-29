@@ -183,7 +183,9 @@ class SmilesImgDataModule(pl.LightningDataModule):
         Returns:
             DataLoader: train dataloader
         """
-        return DataLoader(self.csv_train, batch_size=self.batch_size)
+        return DataLoader(
+            self.csv_train, batch_size=self.batch_size, num_workers=12, pin_memory=True
+        )
 
     def enc_train_dataloader(
         self: "SmilesImgDataModule", context: ts.Context
@@ -211,7 +213,9 @@ class SmilesImgDataModule(pl.LightningDataModule):
         Returns:
             DataLoader: val dataloader
         """
-        return DataLoader(self.csv_val, batch_size=self.batch_size)
+        return DataLoader(
+            self.csv_val, batch_size=self.batch_size, num_workers=12, pin_memory=True
+        )
 
     def enc_val_dataloader(
         self: "SmilesImgDataModule", context: ts.Context
