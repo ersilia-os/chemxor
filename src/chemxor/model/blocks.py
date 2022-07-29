@@ -140,7 +140,7 @@ class ConvLinearOne(pl.LightningModule):
         self.conv1 = nn.Conv2d(1, 32, kernel_size=3, padding=0, stride=3)
         self.conv2 = nn.Conv2d(32, 32, kernel_size=3, padding=0, stride=1)
         self.conv3 = nn.Conv2d(32, 64, kernel_size=3, padding=0, stride=1)
-        self.conv4 = nn.Conv2d(32, 64, kernel_size=3, padding=0, stride=1)
+        self.conv4 = nn.Conv2d(64, 64, kernel_size=3, padding=0, stride=1)
         self.fc1 = nn.Linear(2304, 1024)
         self.fc2 = nn.Linear(1024, 512)
         self.fc3 = nn.Linear(512, 256)
