@@ -2,6 +2,7 @@
 
 from kedro.pipeline import node
 import pytorch_lightning as pl
+from torch.nn import functional as F
 
 from chemxor.data_modules.sm_img import SmilesImgDataModule
 from chemxor.model.blocks import ConvLinearOne
@@ -15,7 +16,7 @@ def init_sm_img_data_module() -> pl.LightningDataModule:
 
 def init_convnet_model() -> pl.LightningModule:
     """Initialize Convnet model."""
-    return ConvLinearOne(output=1)
+    return ConvLinearOne(output=1, criterion=F.mse_loss)
 
 
 def train_convnet_model(
