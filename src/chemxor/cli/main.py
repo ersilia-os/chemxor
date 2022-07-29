@@ -7,6 +7,7 @@ from pydantic import parse_obj_as
 import requests
 import tenseal as ts
 
+from chemxor.cli.partnet import partnet
 from chemxor.routes.cryptic_sage import cryptic_sage_bp
 from chemxor.routes.status import status_bp
 from chemxor.routes.test_encryption import test_encryption_bp
@@ -55,5 +56,6 @@ def main() -> None:
     pass
 
 
+main.add_command(partnet)
 main.add_command(serve)
 main.add_command(query)
