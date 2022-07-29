@@ -10,7 +10,7 @@ from torch.optim import Adam, Optimizer
 from torchmetrics import Accuracy, MetricCollection, Precision, Recall
 
 
-class ConvLinearZero(pl.LightningDataModule):
+class ConvLinearZero(pl.LightningModule):
     """Fast distilled model."""
 
     def __init__(self: "ConvLinearZero", output: int = 10) -> None:
@@ -123,7 +123,7 @@ class ConvLinearZero(pl.LightningDataModule):
         return optimizer
 
 
-class ConvLinearOne(pl.LightningDataModule):
+class ConvLinearOne(pl.LightningModule):
     """Distilled model one."""
 
     def __init__(self: "ConvLinearZero", output: int = 10) -> None:
