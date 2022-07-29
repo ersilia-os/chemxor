@@ -1,6 +1,6 @@
 """Basic convolution network."""
 
-from typing import Any
+from typing import Any, Callable
 
 import pytorch_lightning as pl
 import torch as t
@@ -13,7 +13,9 @@ from torchmetrics import Accuracy, MetricCollection, Precision, Recall
 class ConvLinearZero(pl.LightningModule):
     """Fast distilled model."""
 
-    def __init__(self: "ConvLinearZero", output: int = 10) -> None:
+    def __init__(
+        self: "ConvLinearZero", output: int = 10, criterion: Callable = F.cross_entropy
+    ) -> None:
         """Init."""
         super().__init__()
         self.output = output
@@ -35,6 +37,9 @@ class ConvLinearZero(pl.LightningModule):
         self.train_metrics = metrics.clone(prefix="TRAIN_")
         self.valid_metrics = metrics.clone(prefix="VAL_")
         self.test_metrics = metrics.clone(prefix="TEST_")
+
+        # Criterion
+        self.criterion = criterion
 
     def forward(self: "ConvLinearZero", x: Any) -> Any:
         """Forward function.
@@ -73,7 +78,7 @@ class ConvLinearZero(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        loss = F.cross_entropy(output, y.type(t.long))
+        loss = self.criterion(output, y.type(t.long))
 
         # Logging to TensorBoard by default
         self.log("TRAIN_Loss", loss)
@@ -91,7 +96,7 @@ class ConvLinearZero(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        loss = F.cross_entropy(output, y.type(t.long))
+        loss = self.criterion(output, y.type(t.long))
         # Logging to TensorBoard by default
         self.log("VAL_Loss", loss)
 
@@ -108,7 +113,7 @@ class ConvLinearZero(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        loss = F.cross_entropy(output, y.type(t.long))
+        loss = self.criterion(output, y.type(t.long))
 
         # Logging to TensorBoard by default
         self.log("TEST_Loss", loss)
@@ -126,7 +131,9 @@ class ConvLinearZero(pl.LightningModule):
 class ConvLinearOne(pl.LightningModule):
     """Distilled model one."""
 
-    def __init__(self: "ConvLinearZero", output: int = 10) -> None:
+    def __init__(
+        self: "ConvLinearZero", output: int = 10, criterion: Callable = F.cross_entropy
+    ) -> None:
         """Init."""
         super().__init__()
         self.output = output
@@ -150,6 +157,9 @@ class ConvLinearOne(pl.LightningModule):
         self.train_metrics = metrics.clone(prefix="TRAIN_")
         self.valid_metrics = metrics.clone(prefix="VAL_")
         self.test_metrics = metrics.clone(prefix="TEST_")
+
+        # Criterion
+        self.criterion = criterion
 
     def forward(self: "ConvLinearZero", x: Any) -> Any:
         """Forward function.
@@ -192,7 +202,7 @@ class ConvLinearOne(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        loss = F.cross_entropy(output, y.type(t.long))
+        loss = self.criterion(output, y.type(t.long))
 
         # Logging to TensorBoard by default
         self.log("TRAIN_Loss", loss)
@@ -210,7 +220,7 @@ class ConvLinearOne(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        loss = F.cross_entropy(output, y.type(t.long))
+        loss = self.criterion(output, y.type(t.long))
         # Logging to TensorBoard by default
         self.log("VAL_Loss", loss)
 
@@ -227,7 +237,7 @@ class ConvLinearOne(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        loss = F.cross_entropy(output, y.type(t.long))
+        loss = self.criterion(output, y.type(t.long))
 
         # Logging to TensorBoard by default
         self.log("TEST_Loss", loss)
