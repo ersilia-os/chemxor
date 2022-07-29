@@ -3,6 +3,8 @@ from typing import Dict
 
 from kedro.pipeline import Pipeline
 
+
+from chemxor.pipelines.pipelines import convnet_linear_one_pipeline
 from chemxor.pipelines.convnet_default.pipeline import (
     convnet_default_pipeline,
 )
@@ -24,6 +26,7 @@ def register_pipelines() -> Dict[str, Pipeline]:
         A mapping from a pipeline name to a ``Pipeline`` object.
     """
     return {
+        "convnet_linear_one": convnet_linear_one_pipeline,
         "convnet": convnet_default_pipeline,
         "convnet-smiles": convnet_smiles_pipeline,
         "cryptic_sage_default": cryptic_sage_default_pipeline,
