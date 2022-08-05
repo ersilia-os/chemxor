@@ -70,7 +70,7 @@ class SmilesImgDataset(Dataset):
         Returns:
             int: Length of the dataset.
         """
-        return len(self.preds_df_full)
+        return len(self.preds_df_full) - 30
 
     def __getitem__(self: "SmilesImgDataset", index: int) -> Any:
         """Get item from the dataset.
