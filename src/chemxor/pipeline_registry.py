@@ -11,12 +11,6 @@ from chemxor.pipelines.convnet_default.pipeline import (
 from chemxor.pipelines.convnet_smiles.pipeline import (
     convnet_smiles_pipeline,
 )
-from chemxor.pipelines.cryptic_sage_default.pipeline import (
-    cryptic_sage_default_pipeline,
-)
-from chemxor.pipelines.hello_world.pipeline import hello_pipeline
-from chemxor.pipelines.iris.pipelines import iris_split_pipeline
-from chemxor.pipelines.sm_to_img.pipeline import convert_smiles_to_imgs_pipeline
 
 
 def register_pipelines() -> Dict[str, Pipeline]:
@@ -29,8 +23,5 @@ def register_pipelines() -> Dict[str, Pipeline]:
         "convnet_linear_one": convnet_linear_one_pipeline,
         "convnet": convnet_default_pipeline,
         "convnet-smiles": convnet_smiles_pipeline,
-        "cryptic_sage_default": cryptic_sage_default_pipeline,
-        "sm_to_imgs": convert_smiles_to_imgs_pipeline,
-        "iris_split": iris_split_pipeline,
-        "__default__": hello_pipeline + iris_split_pipeline,
+        "__default__": convnet_smiles_pipeline,
     }
