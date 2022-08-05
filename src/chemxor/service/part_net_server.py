@@ -15,11 +15,11 @@ from chemxor.schema.fhe_model import (
 )
 
 
-class PartitionNetService:
+class PartitionNetServer:
     """Partitioned network service."""
 
     def __init__(
-        self: "PartitionNetService",
+        self: "PartitionNetServer",
         part_net_list: Optional[List[Union[nn.Module, LightningModule]]] = None,
         flask_app: Optional[Flask] = None,
     ) -> None:
@@ -28,7 +28,7 @@ class PartitionNetService:
         self.flask_app = flask_app or Flask()
         self.flask_blueprint = Blueprint()
 
-    def forward(self: "PartitionNetService", x: Any, step: int) -> Any:
+    def forward(self: "PartitionNetServer", x: Any, step: int) -> Any:
         """Forward function.
 
         Args:
@@ -41,7 +41,7 @@ class PartitionNetService:
         x = self.part_net_list[step](x)
         return x
 
-    def service_get(self: "PartitionNetService") -> Response:
+    def service_get(self: "PartitionNetServer") -> Response:
         """Get request handler.
 
         Returns:
@@ -62,7 +62,7 @@ class PartitionNetService:
         response_body = PartFHEModelQueryPostResponse()
         return make_response(response_body.json(), HTTPStatus.OK)
 
-    def service_post(self: "PartitionNetService") -> Response:
+    def service_post(self: "PartitionNetServer") -> Response:
         """Post request handler.
 
         Returns:
@@ -100,14 +100,14 @@ class PartitionNetService:
         )
         return make_response(response_body.json(), HTTPStatus.OK)
 
-    def build_service(self: "PartitionNetService") -> Optional[Flask]:
+    def build_service(self: "PartitionNetServer") -> Optional[Flask]:
         """Build Flask app server."""
         return self.flask_app
 
-    def get_flask_app(self: "PartitionNetService") -> Optional[Flask]:
+    def get_flask_app(self: "PartitionNetServer") -> Optional[Flask]:
         """Return Flask app if present."""
         return self.flask_app
 
-    def get_flask_blueprint(self: "PartitionNetService") -> Optional[Blueprint]:
+    def get_flask_blueprint(self: "PartitionNetServer") -> Optional[Blueprint]:
         """Return Flask blueprint if present."""
         return self.flask_app
