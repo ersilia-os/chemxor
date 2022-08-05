@@ -10,7 +10,7 @@ import tenseal as ts
 import torch as t
 from torch.utils.data import DataLoader, Dataset, random_split
 
-from chemxor.data_modules.enc_dataset import EncDataset
+from chemxor.data.enc_dataset import EncDataset
 
 
 class OSMDataset(Dataset):

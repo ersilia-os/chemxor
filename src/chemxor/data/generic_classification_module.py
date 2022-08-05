@@ -126,7 +126,7 @@ class OlindaCDataModule(pl.LightningDataModule):
         target_transform: Optional[Any] = None,
         model: Optional[Union[OlindaNet, OlindaNetOne, OlindaNetZero]] = None,
     ) -> None:
-        """OSM data module init.
+        """Olinda Regression data module init.
 
         Args:
             csv_path (Path): csv path.

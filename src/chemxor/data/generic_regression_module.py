@@ -14,8 +14,8 @@ import tenseal as ts
 import torch as t
 from torch.utils.data import DataLoader, Dataset, random_split
 
-from chemxor.model import OlindaNet, OlindaNetOne, OlindaNetZero
 from chemxor.data.enc_conv_dataset import EncConvDataset
+from chemxor.model import OlindaNet, OlindaNetOne, OlindaNetZero
 from chemxor.utils import get_project_root_path
 
 project_root_path = get_project_root_path()
@@ -114,7 +114,7 @@ class OlindaRDataModule(pl.LightningDataModule):
         target_transform: Optional[Any] = None,
         model: Optional[Union[OlindaNet, OlindaNetOne, OlindaNetZero]] = None,
     ) -> None:
-        """OSM data module init.
+        """Olinda Regression data module init.
 
         Args:
             csv_path (Path): csv path.
