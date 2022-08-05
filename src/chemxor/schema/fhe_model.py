@@ -10,6 +10,8 @@ class PreProcessInput(Enum):
     """Supported input pre processor."""
 
     IM_TO_COL = "im_to_col"
+    RE_ENCRYPT = "re_encrypt"
+    PASSTHROUGH = "passthrough"
 
 
 class FHEModelQueryPostRequest(BaseModel):
