@@ -3,14 +3,8 @@ from typing import Dict
 
 from kedro.pipeline import Pipeline
 
-
-from chemxor.pipelines.pipelines import convnet_linear_one_pipeline
-from chemxor.pipelines.convnet_default.pipeline import (
-    convnet_default_pipeline,
-)
-from chemxor.pipelines.convnet_smiles.pipeline import (
-    convnet_smiles_pipeline,
-)
+from chemxor.pipelines.olinda_train_classification import olinda_one_cls_pipeline
+from chemxor.pipelines.olinda_train_regression import olinda_one_reg_pipeline
 
 
 def register_pipelines() -> Dict[str, Pipeline]:
@@ -20,8 +14,7 @@ def register_pipelines() -> Dict[str, Pipeline]:
         A mapping from a pipeline name to a ``Pipeline`` object.
     """
     return {
-        "convnet_linear_one": convnet_linear_one_pipeline,
-        "convnet": convnet_default_pipeline,
-        "convnet-smiles": convnet_smiles_pipeline,
-        "__default__": convnet_smiles_pipeline,
+        "olinda_one_reg": olinda_one_reg_pipeline,
+        "olinda_one_cls": olinda_one_cls_pipeline,
+        "__default__": olinda_one_reg_pipeline,
     }

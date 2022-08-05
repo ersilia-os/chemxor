@@ -2,7 +2,7 @@
 
 from typing import Path
 
-from kedro.pipeline import node
+from kedro.pipeline import node, Pipeline
 import pytorch_lightning as pl
 
 from chemxor.data.sm_img import SmilesImgDataModule
@@ -20,7 +20,9 @@ def init_model() -> pl.LightningModule:
     return OlindaNetOne(output=1)
 
 
-default_path = get_project_root_path().joinpath("data/06_models/olindanet-one")
+default_path = get_project_root_path().joinpath(
+    "data/06_models/olindanet-one-regression"
+)
 
 
 def train_model(
@@ -40,8 +42,17 @@ def train_model(
 
 init_data_module_node = node(func=init_data_module, inputs=None, outputs="data_module")
 init_model_node = node(func=init_model, inputs=None, outputs="model")
-train_convnet_model_node = node(
+train_model_node = node(
     func=train_model,
     inputs=["data_module", "model"],
     outputs=None,
+)
+
+# Assemble nodes into a pipeline
+olinda_one_reg_pipeline = Pipeline(
+    [
+        init_data_module_node,
+        init_model_node,
+        train_model_node,
+    ]
 )
