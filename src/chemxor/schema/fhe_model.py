@@ -37,4 +37,5 @@ class PartFHEModelQueryPostResponse(FHEModelQueryPostResponse):
     """Partitioned FHE Encrypted model query post response schema."""
 
     next_step: int
-    preprocess_next_input: Optional[List[PreProcessInput]] = None
+    preprocess_next_input: List[PreProcessInput] = []
+    preprocess_next_args: List[List] = [[]]
