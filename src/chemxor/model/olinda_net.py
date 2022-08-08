@@ -89,6 +89,8 @@ class OlindaNetZero(pl.LightningModule):
         self.log("TRAIN_Loss", loss)
 
         # Logging metrics
+        if self.output > 1:
+            y = y.int()
         metrics = self.train_metrics(output, y)
         self.log_dict(metrics)
         return loss
@@ -108,6 +110,8 @@ class OlindaNetZero(pl.LightningModule):
         self.log("VAL_Loss", loss)
 
         # Logging metrics
+        if self.output > 1:
+            y = y.int()
         metrics = self.valid_metrics(output, y)
         self.log_dict(metrics)
 
@@ -126,6 +130,8 @@ class OlindaNetZero(pl.LightningModule):
         self.log("TEST_Loss", loss)
 
         # Logging metrics
+        if self.output > 1:
+            y = y.int()
         metrics = self.test_metrics(output, y)
         self.log_dict(metrics)
 
@@ -223,6 +229,8 @@ class OlindaNet(pl.LightningModule):
         self.log("TRAIN_Loss", loss)
 
         # Logging metrics
+        if self.output > 1:
+            y = y.int()
         metrics = self.train_metrics(output, y)
         self.log_dict(metrics)
         return loss
@@ -242,6 +250,8 @@ class OlindaNet(pl.LightningModule):
         self.log("VAL_Loss", loss)
 
         # Logging metrics
+        if self.output > 1:
+            y = y.int()
         metrics = self.valid_metrics(output, y)
         self.log_dict(metrics)
 
@@ -260,6 +270,8 @@ class OlindaNet(pl.LightningModule):
         self.log("TEST_Loss", loss)
 
         # Logging metrics
+        if self.output > 1:
+            y = y.int()
         metrics = self.test_metrics(output, y)
         self.log_dict(metrics)
 
@@ -359,6 +371,8 @@ class OlindaNetOne(pl.LightningModule):
         self.log("TRAIN_Loss", loss)
 
         # Logging metrics
+        if self.output > 1:
+            y = y.int()
         metrics = self.train_metrics(output, y)
         self.log_dict(metrics)
         return loss
@@ -378,6 +392,8 @@ class OlindaNetOne(pl.LightningModule):
         self.log("VAL_Loss", loss)
 
         # Logging metrics
+        if self.output > 1:
+            y = y.int()
         metrics = self.valid_metrics(output, y)
         self.log_dict(metrics)
 
@@ -396,6 +412,8 @@ class OlindaNetOne(pl.LightningModule):
         self.log("TEST_Loss", loss)
 
         # Logging metrics
+        if self.output > 1:
+            y = y.int()
         metrics = self.test_metrics(output, y)
         self.log_dict(metrics)
 

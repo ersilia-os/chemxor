@@ -37,7 +37,10 @@ def train_model(
         monitor="VAL_Loss",
     )
     trainer = pl.Trainer(
-        callbacks=[checkpoint_callback], accelerator="auto", gradient_clip_val=0.5
+        callbacks=[checkpoint_callback],
+        accelerator="auto",
+        gradient_clip_val=0.5,
+        val_check_interval=0.10,
     )
     trainer.fit(model=model, datamodule=data_module)
 
