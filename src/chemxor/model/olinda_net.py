@@ -3,6 +3,7 @@
 from typing import Any, Callable, Optional
 
 import pytorch_lightning as pl
+import tenseal as ts
 from torch import nn
 from torch.nn import functional as F
 from torch.optim import Adam, Optimizer
@@ -49,6 +50,25 @@ class OlindaNetZero(pl.LightningModule):
                 self.criterion = F.mse_loss
         else:
             self.criterion = criterion
+
+        # Encryption context
+        bits_scale = 26
+        self.enc_context = ts.context(
+            ts.SCHEME_TYPE.CKKS,
+            poly_modulus_degree=8192,
+            coeff_mod_bit_sizes=[
+                31,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                31,
+            ],
+        )
+        self.enc_context.global_scale = pow(2, bits_scale)
+        self.enc_context.generate_galois_keys()
 
     def forward(self: "OlindaNetZero", x: Any) -> Any:
         """Forward function.
@@ -181,6 +201,25 @@ class OlindaNet(pl.LightningModule):
                 self.criterion = F.mse_loss
         else:
             self.criterion = criterion
+
+        # Encryption context
+        bits_scale = 26
+        self.enc_context = ts.context(
+            ts.SCHEME_TYPE.CKKS,
+            poly_modulus_degree=8192,
+            coeff_mod_bit_sizes=[
+                31,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                31,
+            ],
+        )
+        self.enc_context.global_scale = pow(2, bits_scale)
+        self.enc_context.generate_galois_keys()
 
     def forward(self: "OlindaNet", x: Any) -> Any:
         """Forward function.
@@ -323,6 +362,25 @@ class OlindaNetOne(pl.LightningModule):
                 self.criterion = F.mse_loss
         else:
             self.criterion = criterion
+
+        # Encryption context
+        bits_scale = 26
+        self.enc_context = ts.context(
+            ts.SCHEME_TYPE.CKKS,
+            poly_modulus_degree=8192,
+            coeff_mod_bit_sizes=[
+                31,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                31,
+            ],
+        )
+        self.enc_context.global_scale = pow(2, bits_scale)
+        self.enc_context.generate_galois_keys()
 
     def forward(self: "OlindaNetOne", x: Any) -> Any:
         """Forward function.
