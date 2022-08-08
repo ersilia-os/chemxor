@@ -139,6 +139,7 @@ class OlindaCDataModule(pl.LightningDataModule):
         """
         super().__init__()
         self.csv_path = csv_path
+        self.threshold = threshold
         self.batch_size = batch_size
         self.transform = transform
         self.target_transform = target_transform
@@ -158,6 +159,7 @@ class OlindaCDataModule(pl.LightningDataModule):
         """
         self.dataset = OlindaCDataset(
             self.csv_path,
+            self.threshold,
             self.transform,
             self.target_transform,
         )
