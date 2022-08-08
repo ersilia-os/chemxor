@@ -7,6 +7,7 @@ import tenseal as ts
 
 from chemxor.model.fhe_activation import softplus_polyval
 from chemxor.model.olinda_net import OlindaNet, OlindaNetOne, OlindaNetZero
+from chemxor.schema.fhe_model import PreProcessInput
 
 
 class FHEOlindaNetZero(pl.LightningModule):
@@ -36,6 +37,10 @@ class FHEOlindaNetZero(pl.LightningModule):
         # Prepare parameters
         self.steps = 1
         self.conv1_windows_nb = 900
+        self.pre_process = [
+            (PreProcessInput.RE_ENCRYPT, []),
+            (PreProcessInput.PASSTHROUGH, []),
+        ]
 
         # Encryption context
         bits_scale = 26
