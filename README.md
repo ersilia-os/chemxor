@@ -98,23 +98,23 @@ from chemxor.data import OlindaCDataModule, OlindaRDataModule
 
 dm_regression = OlindaRDataModule(csv_path="path/to/csv")
 dm_regression.setup("test")
-enc_data_loader = dm_classification.enc_dataloader(context=fhe_model.context)
+enc_data_loader = dm_classification.enc_dataloader(context=fhe_model.enc_context)
 enc_sample = next(iter(enc_data_loader))
 ```
 
 Also, the FHE models are partitioned to control multiplicative depth. So, the forward function is modified to accept a step parameter. For testing, The FHE model can be evaluated locally as follows:
 
 ```python
-from chemxor.utils import process_fhe_input
+from chemxor.utils import prepare_fhe_input
 
 output = enc_sample
 for step in fhe_model.steps:
     output = fhe_model(output, step)
     dec_out = output.decrypt().tolist()
-    output = process_fhe_input(
+    output = prepare_fhe_input(
                     dec_out,
                     fhe_model.pre_process[step],
-                    fhe_model.context
+                    fhe_model.enc_context
                 )
 
 # final decryted output
@@ -126,7 +126,7 @@ This process can automated using a utility function provided by ChemXor
 ```python
 from chemxor.utils import evaluate_fhe_model
 
-decrypted_output = evaluate_fhe_model(fhe_model, enc_sample)
+decrypted_output = evaluate_fhe_model(fhe_model, enc_sample, decrypt = True)
 ```
 
 ### Serve models
