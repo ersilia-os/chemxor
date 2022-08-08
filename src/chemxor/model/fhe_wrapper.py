@@ -6,7 +6,7 @@ import pytorch_lightning as pl
 import tenseal as ts
 
 from chemxor.model.fhe_activation import softplus_polyval
-from chemxor.model.olinda_net import OlindaNetZero, OlindaNet, OlindaNetOne
+from chemxor.model.olinda_net import OlindaNet, OlindaNetOne, OlindaNetZero
 
 
 class FHEOlindaNetZero(pl.LightningModule):
@@ -36,6 +36,25 @@ class FHEOlindaNetZero(pl.LightningModule):
         # Prepare parameters
         self.steps = 1
         self.conv1_windows_nb = 900
+
+        # Encryption context
+        bits_scale = 26
+        self.enc_context = ts.context(
+            ts.SCHEME_TYPE.CKKS,
+            poly_modulus_degree=8192,
+            coeff_mod_bit_sizes=[
+                31,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                31,
+            ],
+        )
+        self.enc_context.global_scale = pow(2, bits_scale)
+        self.enc_context.generate_galois_keys()
 
     def forward(self: "FHEOlindaNetZero", x: Any, step: int) -> Any:
         """Forward function.
@@ -107,6 +126,25 @@ class FHEOlindaNet(pl.LightningModule):
         self.steps = 3
         self.conv1_windows_nb = 900
         self.conv2_windows_nb = 900
+
+        # Encryption context
+        bits_scale = 26
+        self.enc_context = ts.context(
+            ts.SCHEME_TYPE.CKKS,
+            poly_modulus_degree=8192,
+            coeff_mod_bit_sizes=[
+                31,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                31,
+            ],
+        )
+        self.enc_context.global_scale = pow(2, bits_scale)
+        self.enc_context.generate_galois_keys()
 
     def forward(self: "FHEOlindaNet", x: Any, step: int) -> Any:
         """Forward function.
@@ -210,6 +248,25 @@ class FHEOlindaNetOne(pl.LightningModule):
         self.conv2_windows_nb = 900
         self.conv3_windows_nb = 900
         self.conv4_windows_nb = 900
+
+        # Encryption context
+        bits_scale = 26
+        self.enc_context = ts.context(
+            ts.SCHEME_TYPE.CKKS,
+            poly_modulus_degree=8192,
+            coeff_mod_bit_sizes=[
+                31,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                bits_scale,
+                31,
+            ],
+        )
+        self.enc_context.global_scale = pow(2, bits_scale)
+        self.enc_context.generate_galois_keys()
 
     def forward(self: "FHEOlindaNetOne", x: Any, step: int) -> Any:
         """Forward function.
