@@ -71,7 +71,7 @@ class OlindaRDataset(Dataset):
         molecule_smile = self.df_full.iloc[index][1]
 
         # Extract label
-        label = t.tensor(self.df_full.iloc[index][0], dtype=t.float)
+        label = t.tensor(self.df_full.iloc[index][0], dtype=t.float).view((1))
 
         # Create molecule figerprints
         molecule_fp = AllChem.GetMorganFingerprint(

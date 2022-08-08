@@ -1,18 +1,18 @@
 """Olinda Regression model training pipeline."""
 
-from typing import Path
+from pathlib import Path
 
 from kedro.pipeline import node, Pipeline
 import pytorch_lightning as pl
 
-from chemxor.data.sm_img import SmilesImgDataModule
+from chemxor.data import OlindaRDataModule
 from chemxor.model import OlindaNetOne
 from chemxor.utils import get_project_root_path
 
 
 def init_data_module() -> pl.LightningDataModule:
     """Initialize data module."""
-    return SmilesImgDataModule()
+    return OlindaRDataModule()
 
 
 def init_model() -> pl.LightningModule:

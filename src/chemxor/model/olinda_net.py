@@ -1,10 +1,9 @@
 """OlindaNet modules."""
 
-from typing import Any, Callable, Option
+from typing import Any, Callable, Optional
 
 import pytorch_lightning as pl
-import torch as t
-from torch import autocast, nn
+from torch import nn
 from torch.nn import functional as F
 from torch.optim import Adam, Optimizer
 from torchmetrics import Accuracy, MeanSquaredError, MetricCollection, Precision, Recall
@@ -16,7 +15,7 @@ class OlindaNetZero(pl.LightningModule):
     """OlindaNet Zero: Slim(relatively) distillation network."""
 
     def __init__(
-        self: "OlindaNetZero", output: int = 10, criterion: Option[Callable] = None
+        self: "OlindaNetZero", output: int = 10, criterion: Optional[Callable] = None
     ) -> None:
         """Init."""
         super().__init__()
@@ -35,11 +34,12 @@ class OlindaNetZero(pl.LightningModule):
                     Recall(num_classes=output, average="macro"),
                 ]
             )
-            self.train_metrics = metrics.clone(prefix="TRAIN_")
-            self.valid_metrics = metrics.clone(prefix="VAL_")
-            self.test_metrics = metrics.clone(prefix="TEST_")
         else:
             metrics = MetricCollection([MeanSquaredError()])
+
+        self.train_metrics = metrics.clone(prefix="TRAIN_")
+        self.valid_metrics = metrics.clone(prefix="VAL_")
+        self.test_metrics = metrics.clone(prefix="TEST_")
 
         # Criterion
         if criterion is None:
@@ -83,8 +83,7 @@ class OlindaNetZero(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        with autocast(self.device):
-            loss = self.criterion(output, y)
+        loss = self.criterion(output, y)
 
         # Logging to TensorBoard by default
         self.log("TRAIN_Loss", loss)
@@ -103,14 +102,13 @@ class OlindaNetZero(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        with autocast(self.device):
-            loss = self.criterion(output, y)
+        loss = self.criterion(output, y)
 
         # Logging to TensorBoard by default
         self.log("VAL_Loss", loss)
 
         # Logging metrics
-        metrics = self.valid_metrics(output, y.type(t.int))
+        metrics = self.valid_metrics(output, y)
         self.log_dict(metrics)
 
     def test_step(self: "OlindaNetZero", batch: Any, batch_idx: Any) -> None:
@@ -122,14 +120,13 @@ class OlindaNetZero(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        with autocast(self.device):
-            loss = self.criterion(output, y)
+        loss = self.criterion(output, y)
 
         # Logging to TensorBoard by default
         self.log("TEST_Loss", loss)
 
         # Logging metrics
-        metrics = self.test_metrics(output, y.type(t.int))
+        metrics = self.test_metrics(output, y)
         self.log_dict(metrics)
 
     def configure_optimizers(self: "OlindaNetZero") -> Optimizer:
@@ -142,7 +139,7 @@ class OlindaNet(pl.LightningModule):
     """OlindaNet: A good compromise(relatively) distillation network."""
 
     def __init__(
-        self: "OlindaNet", output: int = 10, criterion: Option[Callable] = None
+        self: "OlindaNet", output: int = 10, criterion: Optional[Callable] = None
     ) -> None:
         """Init."""
         super().__init__()
@@ -163,11 +160,12 @@ class OlindaNet(pl.LightningModule):
                     Recall(num_classes=output, average="macro"),
                 ]
             )
-            self.train_metrics = metrics.clone(prefix="TRAIN_")
-            self.valid_metrics = metrics.clone(prefix="VAL_")
-            self.test_metrics = metrics.clone(prefix="TEST_")
         else:
             metrics = MetricCollection([MeanSquaredError()])
+
+        self.train_metrics = metrics.clone(prefix="TRAIN_")
+        self.valid_metrics = metrics.clone(prefix="VAL_")
+        self.test_metrics = metrics.clone(prefix="TEST_")
 
         # Criterion
         if criterion is None:
@@ -219,8 +217,7 @@ class OlindaNet(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        with autocast(self.device):
-            loss = self.criterion(output, y)
+        loss = self.criterion(output, y)
 
         # Logging to TensorBoard by default
         self.log("TRAIN_Loss", loss)
@@ -239,14 +236,13 @@ class OlindaNet(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        with autocast(self.device):
-            loss = self.criterion(output, y)
+        loss = self.criterion(output, y)
 
         # Logging to TensorBoard by default
         self.log("VAL_Loss", loss)
 
         # Logging metrics
-        metrics = self.valid_metrics(output, y.type(t.int))
+        metrics = self.valid_metrics(output, y)
         self.log_dict(metrics)
 
     def test_step(self: "OlindaNet", batch: Any, batch_idx: Any) -> None:
@@ -258,14 +254,13 @@ class OlindaNet(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        with autocast(self.device):
-            loss = self.criterion(output, y)
+        loss = self.criterion(output, y)
 
         # Logging to TensorBoard by default
         self.log("TEST_Loss", loss)
 
         # Logging metrics
-        metrics = self.test_metrics(output, y.type(t.int))
+        metrics = self.test_metrics(output, y)
         self.log_dict(metrics)
 
     def configure_optimizers(self: "OlindaNet") -> Optimizer:
@@ -278,7 +273,7 @@ class OlindaNetOne(pl.LightningModule):
     """OlindaNet One: Heavy(relatively) distillation network."""
 
     def __init__(
-        self: "OlindaNetOne", output: int = 10, criterion: Option[Callable] = None
+        self: "OlindaNetOne", output: int = 10, criterion: Optional[Callable] = None
     ) -> None:
         """Init."""
         super().__init__()
@@ -301,11 +296,12 @@ class OlindaNetOne(pl.LightningModule):
                     Recall(num_classes=output, average="macro"),
                 ]
             )
-            self.train_metrics = metrics.clone(prefix="TRAIN_")
-            self.valid_metrics = metrics.clone(prefix="VAL_")
-            self.test_metrics = metrics.clone(prefix="TEST_")
         else:
             metrics = MetricCollection([MeanSquaredError()])
+
+        self.train_metrics = metrics.clone(prefix="TRAIN_")
+        self.valid_metrics = metrics.clone(prefix="VAL_")
+        self.test_metrics = metrics.clone(prefix="TEST_")
 
         # Criterion
         if criterion is None:
@@ -357,8 +353,7 @@ class OlindaNetOne(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        with autocast(self.device):
-            loss = self.criterion(output, y)
+        loss = self.criterion(output, y)
 
         # Logging to TensorBoard by default
         self.log("TRAIN_Loss", loss)
@@ -377,14 +372,13 @@ class OlindaNetOne(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        with autocast(self.device):
-            loss = self.criterion(output, y)
+        loss = self.criterion(output, y)
 
         # Logging to TensorBoard by default
         self.log("VAL_Loss", loss)
 
         # Logging metrics
-        metrics = self.valid_metrics(output, y.type(t.int))
+        metrics = self.valid_metrics(output, y)
         self.log_dict(metrics)
 
     def test_step(self: "OlindaNetOne", batch: Any, batch_idx: Any) -> None:
@@ -396,14 +390,13 @@ class OlindaNetOne(pl.LightningModule):
         """
         x, y = batch
         output = self(x)
-        with autocast(self.device):
-            loss = self.criterion(output, y)
+        loss = self.criterion(output, y)
 
         # Logging to TensorBoard by default
         self.log("TEST_Loss", loss)
 
         # Logging metrics
-        metrics = self.test_metrics(output, y.type(t.int))
+        metrics = self.test_metrics(output, y)
         self.log_dict(metrics)
 
     def configure_optimizers(self: "OlindaNetOne") -> Optimizer:

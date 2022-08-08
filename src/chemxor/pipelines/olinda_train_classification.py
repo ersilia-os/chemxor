@@ -1,6 +1,6 @@
 """Olinda Classification model training pipeline."""
 
-from typing import Path
+from pathlib import Path
 
 from kedro.pipeline import node, Pipeline
 import pytorch_lightning as pl
