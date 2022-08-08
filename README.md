@@ -108,7 +108,7 @@ Also, the FHE models are partitioned to control multiplicative depth. So, the fo
 from chemxor.utils import prepare_fhe_input
 
 output = enc_sample
-for step in fhe_model.steps:
+for step in range(fhe_model.steps):
     output = fhe_model(output, step)
     dec_out = output.decrypt().tolist()
     output = prepare_fhe_input(
