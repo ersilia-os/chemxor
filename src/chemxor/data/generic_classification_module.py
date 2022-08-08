@@ -78,7 +78,7 @@ class OlindaCDataset(Dataset):
 
         # One-hot encoding
         one_hot_tensor = t.zeros((len(self.threshold) + 1))
-        for i, value in self.threshold:
+        for i, value in enumerate(self.threshold):
             if label <= value:
                 one_hot_tensor[i] = 1
         if sum(one_hot_tensor).item() == 0:
