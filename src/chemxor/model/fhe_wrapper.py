@@ -47,22 +47,26 @@ class FHEOlindaNetZero(pl.LightningModule):
         ]
 
         # Encryption context
-        bits_scale = 26
-        self.enc_context = ts.context(
-            ts.SCHEME_TYPE.CKKS,
-            poly_modulus_degree=8192,
-            coeff_mod_bit_sizes=[
+        self.bits_scale = 26
+        self.poly_modulus_degree = 8192
+        self.coeff_mod_bit_sizes = (
+            [
                 31,
-                bits_scale,
-                bits_scale,
-                bits_scale,
-                bits_scale,
-                bits_scale,
-                bits_scale,
+                self.bits_scale,
+                self.bits_scale,
+                self.bits_scale,
+                self.bits_scale,
+                self.bits_scale,
+                self.bits_scale,
                 31,
             ],
         )
-        self.enc_context.global_scale = pow(2, bits_scale)
+        self.enc_context = ts.context(
+            ts.SCHEME_TYPE.CKKS,
+            poly_modulus_degree=self.poly_modulus_degree,
+            coeff_mod_bit_sizes=self.coeff_mod_bit_sizes,
+        )
+        self.enc_context.global_scale = pow(2, self.bits_scale)
         self.enc_context.generate_galois_keys()
 
     def forward(self: "FHEOlindaNetZero", x: Any, step: int) -> Any:
@@ -159,22 +163,26 @@ class FHEOlindaNet(pl.LightningModule):
         ]
 
         # Encryption context
-        bits_scale = 26
-        self.enc_context = ts.context(
-            ts.SCHEME_TYPE.CKKS,
-            poly_modulus_degree=8192,
-            coeff_mod_bit_sizes=[
+        self.bits_scale = 26
+        self.poly_modulus_degree = 8192
+        self.coeff_mod_bit_sizes = (
+            [
                 31,
-                bits_scale,
-                bits_scale,
-                bits_scale,
-                bits_scale,
-                bits_scale,
-                bits_scale,
+                self.bits_scale,
+                self.bits_scale,
+                self.bits_scale,
+                self.bits_scale,
+                self.bits_scale,
+                self.bits_scale,
                 31,
             ],
         )
-        self.enc_context.global_scale = pow(2, bits_scale)
+        self.enc_context = ts.context(
+            ts.SCHEME_TYPE.CKKS,
+            poly_modulus_degree=self.poly_modulus_degree,
+            coeff_mod_bit_sizes=self.coeff_mod_bit_sizes,
+        )
+        self.enc_context.global_scale = pow(2, self.bits_scale)
         self.enc_context.generate_galois_keys()
 
     def forward(self: "FHEOlindaNet", x: Any, step: int) -> Any:
@@ -317,22 +325,26 @@ class FHEOlindaNetOne(pl.LightningModule):
         ]
 
         # Encryption context
-        bits_scale = 26
-        self.enc_context = ts.context(
-            ts.SCHEME_TYPE.CKKS,
-            poly_modulus_degree=8192,
-            coeff_mod_bit_sizes=[
+        self.bits_scale = 26
+        self.poly_modulus_degree = 8192
+        self.coeff_mod_bit_sizes = (
+            [
                 31,
-                bits_scale,
-                bits_scale,
-                bits_scale,
-                bits_scale,
-                bits_scale,
-                bits_scale,
+                self.bits_scale,
+                self.bits_scale,
+                self.bits_scale,
+                self.bits_scale,
+                self.bits_scale,
+                self.bits_scale,
                 31,
             ],
         )
-        self.enc_context.global_scale = pow(2, bits_scale)
+        self.enc_context = ts.context(
+            ts.SCHEME_TYPE.CKKS,
+            poly_modulus_degree=self.poly_modulus_degree,
+            coeff_mod_bit_sizes=self.coeff_mod_bit_sizes,
+        )
+        self.enc_context.global_scale = pow(2, self.bits_scale)
         self.enc_context.generate_galois_keys()
 
     def forward(self: "FHEOlindaNetOne", x: Any, step: int) -> Any:
