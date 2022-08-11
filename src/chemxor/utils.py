@@ -3,6 +3,10 @@
 from pathlib import Path
 from typing import Any, List, Tuple, Union
 
+import joblib
+import numpy as np
+from rdkit import Chem
+from rdkit.Chem import AllChem
 import tenseal as ts
 import torch as t
 
@@ -73,5 +77,49 @@ def evaluate_fhe_model(model: Any, enc_sample: Any, decrypt: bool = False) -> Li
         output = prepare_fhe_input(dec_out, model.pre_process[step], model.enc_context)
 
     if decrypt is True:
-        output = output.decrypt().tolist()
+        output = output.decrypt()
     return output
+
+
+def smiles_to_imcol(x: str, context: ts.Context) -> Any:
+    """Convert smiles string to compatible inputs for FHE models.
+
+    Args:
+        x (str): SMILES string
+        context (ts.Context): TenSeal Context
+
+    Returns:
+        Any: Transformed encrypted input
+    """
+    # Load grid transformer
+    project_root_path = get_project_root_path()
+    grid_transformer = joblib.load(
+        project_root_path.joinpath("data/06_models/grid_transformer.joblib")
+    )
+    # Create molecule figerprints
+    molecule_fp = AllChem.GetMorganFingerprint(
+        Chem.MolFromSmiles(x),
+        radius=3,
+        useCounts=True,
+        useFeatures=True,
+    )
+
+    # Truncate fp to len 1024
+    molecule_fp_truncated = np.zeros((1024), np.uint8)
+    for idx, v in molecule_fp.GetNonzeroElements().items():
+        nidx = idx % 1024
+        molecule_fp_truncated[nidx] += int(v)
+
+    # Create input image
+    molecule_img = grid_transformer.transform([molecule_fp_truncated])[0]
+    molecule_img = t.tensor(molecule_img, dtype=t.float).reshape(1, 32, 32)
+
+    # Encrypt items
+    enc_x, _ = ts.im2col_encoding(
+        context,
+        molecule_img.view(32, 32).tolist(),
+        3,
+        3,
+        3,
+    )
+    return enc_x
