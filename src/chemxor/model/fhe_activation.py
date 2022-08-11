@@ -30,6 +30,6 @@ def softplus_polyval(x: Any) -> Any:
         Any: model output
     """
     if type(x) in [ts.CKKSTensor, ts.CKKSVector]:
-        return x.polyval([1.8697581, 0.5, 0.013394318, 0, -0.000002])
+        return x.polyval([1.8697581, 0.5, 0.013394318])
     else:
         return 1.8697581 + (0.5 * x) + (0.013394318 * (x**2)) - (-0.000002 * (x**4))
