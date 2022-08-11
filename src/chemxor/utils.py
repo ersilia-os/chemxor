@@ -67,7 +67,7 @@ def evaluate_fhe_model(model: Any, enc_sample: Any, decrypt: bool = False) -> Li
         List: Model output
     """
     output = enc_sample
-    for step in range(model.steps):
+    for step in range(model.steps + 1):
         output = model(output, step)
         dec_out = output.decrypt().tolist()
         output = prepare_fhe_input(dec_out, model.pre_process[step], model.enc_context)
