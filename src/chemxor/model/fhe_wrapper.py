@@ -36,10 +36,10 @@ class FHEOlindaNetZero(pl.LightningModule):
 
         # Prepare parameters
         self.steps = 1
-        self.conv1_windows_nb = 900
+        self.conv1_windows_nb = 100
         self.pre_process = [
-            (PreProcessInput.RE_ENCRYPT, []),
-            (PreProcessInput.PASSTHROUGH, []),
+            [(PreProcessInput.RESHAPE, [3200]), (PreProcessInput.RE_ENCRYPT, [])],
+            [(PreProcessInput.PASSTHROUGH, [])],
         ]
 
         # Encryption context
@@ -73,17 +73,23 @@ class FHEOlindaNetZero(pl.LightningModule):
         """
         if step == 0:
             # conv layer 1
-            enc_channels = []
-            for kernel, bias in zip(self.conv1_weight, self.conv1_bias):
-                y = x.conv2d_im2col(kernel, self.conv1_windows_nb) + bias
-                enc_channels.append(y)
-            # pack all channels into a single flattened vector
-            enc_x = ts.CKKSVector.pack_vectors(enc_channels)
+            running_sum = None
+            for i, _ in enumerate(self.conv1_weight):
+                enc_channels = []
+                for kernel, bias in zip(self.conv1_weight[i], self.conv1_bias):
+                    y = x.conv2d_im2col(kernel, self.conv1_windows_nb) + bias
+                    enc_channels.append(y)
+                # pack all channels into a single flattened vector
+                enc_x = ts.CKKSVector.pack_vectors(enc_channels)
+                if running_sum is None:
+                    running_sum = enc_x
+                else:
+                    running_sum = running_sum + enc_x
             enc_x = softplus_polyval(enc_x)
             return enc_x
         elif step == 1:
             # fc1 layer
-            enc_x = enc_x.mm(self.fc1_weight) + self.fc1_bias
+            enc_x = x.mm(self.fc1_weight) + self.fc1_bias
             enc_x = softplus_polyval(enc_x)
             # fc2 layer
             enc_x = enc_x.mm(self.fc2_weight) + self.fc2_bias
@@ -99,6 +105,8 @@ class FHEOlindaNet(pl.LightningModule):
     def __init__(self: "FHEOlindaNet", model: OlindaNet) -> None:
         """Init."""
         super().__init__()
+
+        self._model = model
 
         # Prepare layers
         self.conv1_weight = model.conv1.weight.data.view(
@@ -129,8 +137,18 @@ class FHEOlindaNet(pl.LightningModule):
 
         # Prepare parameters
         self.steps = 3
-        self.conv1_windows_nb = 900
-        self.conv2_windows_nb = 900
+        self.conv1_windows_nb = 100
+        self.conv2_windows_nb = 64
+
+        self.pre_process = [
+            [
+                (PreProcessInput.RESHAPE, [(32, 10, 10)]),
+                (PreProcessInput.IM_TO_COL, [3, 3, 1]),
+            ],
+            [(PreProcessInput.RESHAPE, [3200]), (PreProcessInput.RE_ENCRYPT, [])],
+            [(PreProcessInput.RE_ENCRYPT, [])],
+            [(PreProcessInput.PASSTHROUGH, [])],
+        ]
 
         # Encryption context
         bits_scale = 26
@@ -163,27 +181,39 @@ class FHEOlindaNet(pl.LightningModule):
         """
         if step == 0:
             # conv layer 1
-            enc_channels = []
-            for kernel, bias in zip(self.conv1_weight, self.conv1_bias):
-                y = x.conv2d_im2col(kernel, self.conv1_windows_nb) + bias
-                enc_channels.append(y)
-            # pack all channels into a single flattened vector
-            enc_x = ts.CKKSVector.pack_vectors(enc_channels)
+            running_sum = None
+            for i, _ in enumerate(self.conv1_weight):
+                enc_channels = []
+                for kernel, bias in zip(self.conv1_weight[i], self.conv1_bias):
+                    y = x.conv2d_im2col(kernel, self.conv1_windows_nb) + bias
+                    enc_channels.append(y)
+                # pack all channels into a single flattened vector
+                enc_x = ts.CKKSVector.pack_vectors(enc_channels)
+                if running_sum is None:
+                    running_sum = enc_x
+                else:
+                    running_sum = running_sum + enc_x
             enc_x = softplus_polyval(enc_x)
             return enc_x
         elif step == 1:
             # conv layer 2
-            enc_channels = []
-            for kernel, bias in zip(self.conv2_weight, self.conv2_bias):
-                y = x.conv2d_im2col(kernel, self.conv2_windows_nb) + bias
-                enc_channels.append(y)
-            # pack all channels into a single flattened vector
-            enc_x = ts.CKKSVector.pack_vectors(enc_channels)
+            running_sum = None
+            for i, _ in enumerate(self.conv2_weight):
+                enc_channels = []
+                for kernel, bias in zip(self.conv2_weight[i], self.conv2_bias):
+                    y = x[i].conv2d_im2col(kernel, self.conv2_windows_nb) + bias
+                    enc_channels.append(y)
+                # pack all channels into a single flattened vector
+                enc_x = ts.CKKSVector.pack_vectors(enc_channels)
+                if running_sum is None:
+                    running_sum = enc_x
+                else:
+                    running_sum = running_sum + enc_x
             enc_x = softplus_polyval(enc_x)
             return enc_x
         elif step == 2:
             # fc1 layer
-            enc_x = enc_x.mm(self.fc1_weight) + self.fc1_bias
+            enc_x = x.mm(self.fc1_weight) + self.fc1_bias
             enc_x = softplus_polyval(enc_x)
             # fc2 layer
             enc_x = enc_x.mm(self.fc2_weight) + self.fc2_bias
@@ -192,7 +222,7 @@ class FHEOlindaNet(pl.LightningModule):
 
         elif step == 3:
             # fc3 layer
-            enc_x = enc_x.mm(self.fc3_weight) + self.fc3_bias
+            enc_x = x.mm(self.fc3_weight) + self.fc3_bias
             enc_x = softplus_polyval(enc_x)
             # fc4 layer
             enc_x = enc_x.mm(self.fc4_weight) + self.fc4_bias
@@ -206,8 +236,11 @@ class FHEOlindaNetOne(pl.LightningModule):
         """Init."""
         super().__init__()
 
+        self._model = model
+
         # Prepare layers
         self.conv1_weight = model.conv1.weight.data.view(
+            model.conv1.in_channels,
             model.conv1.out_channels,
             model.conv1.kernel_size[0],
             model.conv1.kernel_size[1],
@@ -215,6 +248,7 @@ class FHEOlindaNetOne(pl.LightningModule):
         self.conv1_bias = model.conv1.bias.data.tolist()
 
         self.conv2_weight = model.conv2.weight.data.view(
+            model.conv2.in_channels,
             model.conv2.out_channels,
             model.conv2.kernel_size[0],
             model.conv2.kernel_size[1],
@@ -222,6 +256,7 @@ class FHEOlindaNetOne(pl.LightningModule):
         self.conv2_bias = model.conv2.bias.data.tolist()
 
         self.conv3_weight = model.conv3.weight.data.view(
+            model.conv3.in_channels,
             model.conv3.out_channels,
             model.conv3.kernel_size[0],
             model.conv3.kernel_size[1],
@@ -229,6 +264,7 @@ class FHEOlindaNetOne(pl.LightningModule):
         self.conv3_bias = model.conv3.bias.data.tolist()
 
         self.conv4_weight = model.conv4.weight.data.view(
+            model.conv4.in_channels,
             model.conv4.out_channels,
             model.conv4.kernel_size[0],
             model.conv4.kernel_size[1],
@@ -249,10 +285,28 @@ class FHEOlindaNetOne(pl.LightningModule):
 
         # Prepare parameters
         self.steps = 5
-        self.conv1_windows_nb = 900
-        self.conv2_windows_nb = 900
-        self.conv3_windows_nb = 900
-        self.conv4_windows_nb = 900
+        self.conv1_windows_nb = 100
+        self.conv2_windows_nb = 64
+        self.conv3_windows_nb = 36
+        self.conv4_windows_nb = 16
+
+        self.pre_process = [
+            [
+                (PreProcessInput.RESHAPE, [(32, 10, 10)]),
+                (PreProcessInput.IM_TO_COL, [3, 3, 1]),
+            ],
+            [
+                (PreProcessInput.RESHAPE, [(32, 8, 8)]),
+                (PreProcessInput.IM_TO_COL, [3, 3, 1]),
+            ],
+            [
+                (PreProcessInput.RESHAPE, [(64, 6, 6)]),
+                (PreProcessInput.IM_TO_COL, [3, 3, 1]),
+            ],
+            [(PreProcessInput.RESHAPE, [(1024)]), (PreProcessInput.RE_ENCRYPT, [])],
+            [(PreProcessInput.RE_ENCRYPT, [])],
+            [(PreProcessInput.PASSTHROUGH, [])],
+        ]
 
         # Encryption context
         bits_scale = 26
@@ -285,46 +339,71 @@ class FHEOlindaNetOne(pl.LightningModule):
         """
         if step == 0:
             # conv layer 1
-            enc_channels = []
-            for kernel, bias in zip(self.conv1_weight, self.conv1_bias):
-                y = x.conv2d_im2col(kernel, self.conv1_windows_nb) + bias
-                enc_channels.append(y)
-            # pack all channels into a single flattened vector
-            enc_x = ts.CKKSVector.pack_vectors(enc_channels)
+            running_sum = None
+            for i, _ in enumerate(self.conv1_weight):
+                enc_channels = []
+                for kernel, bias in zip(self.conv1_weight[i], self.conv1_bias):
+                    y = x.conv2d_im2col(kernel, self.conv1_windows_nb) + bias
+                    enc_channels.append(y)
+                # pack all channels into a single flattened vector
+                enc_x = ts.CKKSVector.pack_vectors(enc_channels)
+                if running_sum is None:
+                    running_sum = enc_x
+                else:
+                    running_sum = running_sum + enc_x
             enc_x = softplus_polyval(enc_x)
             return enc_x
         elif step == 1:
             # conv layer 2
-            enc_channels = []
-            for kernel, bias in zip(self.conv2_weight, self.conv2_bias):
-                y = x.conv2d_im2col(kernel, self.conv2_windows_nb) + bias
-                enc_channels.append(y)
-            # pack all channels into a single flattened vector
-            enc_x = ts.CKKSVector.pack_vectors(enc_channels)
+            running_sum = None
+            for i, _ in enumerate(self.conv2_weight):
+                enc_channels = []
+                for kernel, bias in zip(self.conv2_weight[i], self.conv2_bias):
+                    y = x[i].conv2d_im2col(kernel, self.conv2_windows_nb) + bias
+                    enc_channels.append(y)
+                # pack all channels into a single flattened vector
+                enc_x = ts.CKKSVector.pack_vectors(enc_channels)
+                if running_sum is None:
+                    running_sum = enc_x
+                else:
+                    running_sum = running_sum + enc_x
             enc_x = softplus_polyval(enc_x)
             return enc_x
         elif step == 2:
             # conv layer 3
-            enc_channels = []
-            for kernel, bias in zip(self.conv3_weight, self.conv3_bias):
-                y = x.conv2d_im2col(kernel, self.conv3_windows_nb) + bias
-                enc_channels.append(y)
-            # pack all channels into a single flattened vector
-            enc_x = ts.CKKSVector.pack_vectors(enc_channels)
+            running_sum = None
+            for i, _ in enumerate(self.conv3_weight):
+                enc_channels = []
+                for kernel, bias in zip(self.conv3_weight[i], self.conv3_bias):
+                    y = x[i].conv2d_im2col(kernel, self.conv3_windows_nb) + bias
+                    enc_channels.append(y)
+                # pack all channels into a single flattened vector
+                enc_x = ts.CKKSVector.pack_vectors(enc_channels)
+                if running_sum is None:
+                    running_sum = enc_x
+                else:
+                    running_sum = running_sum + enc_x
             enc_x = softplus_polyval(enc_x)
             return enc_x
         elif step == 3:
             # conv layer 4
-            enc_channels = []
-            for kernel, bias in zip(self.conv4_weight, self.conv4_bias):
-                y = x.conv2d_im2col(kernel, self.conv3_windows_nb) + bias
-                enc_channels.append(y)
-            # pack all channels into a single flattened vector
-            enc_x = ts.CKKSVector.pack_vectors(enc_channels)
+            running_sum = None
+            for i, _ in enumerate(self.conv4_weight):
+                enc_channels = []
+                for kernel, bias in zip(self.conv4_weight[i], self.conv4_bias):
+                    y = x[i].conv2d_im2col(kernel, self.conv4_windows_nb) + bias
+                    enc_channels.append(y)
+                # pack all channels into a single flattened vector
+                enc_x = ts.CKKSVector.pack_vectors(enc_channels)
+                if running_sum is None:
+                    running_sum = enc_x
+                else:
+                    running_sum = running_sum + enc_x
             enc_x = softplus_polyval(enc_x)
+            return enc_x
         elif step == 4:
             # fc1 layer
-            enc_x = enc_x.mm(self.fc1_weight) + self.fc1_bias
+            enc_x = x.mm(self.fc1_weight) + self.fc1_bias
             enc_x = softplus_polyval(enc_x)
             # fc2 layer
             enc_x = enc_x.mm(self.fc2_weight) + self.fc2_bias
@@ -333,7 +412,7 @@ class FHEOlindaNetOne(pl.LightningModule):
 
         elif step == 5:
             # fc3 layer
-            enc_x = enc_x.mm(self.fc3_weight) + self.fc3_bias
+            enc_x = x.mm(self.fc3_weight) + self.fc3_bias
             enc_x = softplus_polyval(enc_x)
             # fc4 layer
             enc_x = enc_x.mm(self.fc4_weight) + self.fc4_bias
