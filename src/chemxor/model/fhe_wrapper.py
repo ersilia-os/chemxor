@@ -49,18 +49,16 @@ class FHEOlindaNetZero(pl.LightningModule):
         # Encryption context
         self.bits_scale = 26
         self.poly_modulus_degree = 8192
-        self.coeff_mod_bit_sizes = (
-            [
-                31,
-                self.bits_scale,
-                self.bits_scale,
-                self.bits_scale,
-                self.bits_scale,
-                self.bits_scale,
-                self.bits_scale,
-                31,
-            ],
-        )
+        self.coeff_mod_bit_sizes = [
+            31,
+            self.bits_scale,
+            self.bits_scale,
+            self.bits_scale,
+            self.bits_scale,
+            self.bits_scale,
+            self.bits_scale,
+            31,
+        ]
         self.enc_context = ts.context(
             ts.SCHEME_TYPE.CKKS,
             poly_modulus_degree=self.poly_modulus_degree,
@@ -165,18 +163,16 @@ class FHEOlindaNet(pl.LightningModule):
         # Encryption context
         self.bits_scale = 26
         self.poly_modulus_degree = 8192
-        self.coeff_mod_bit_sizes = (
-            [
-                31,
-                self.bits_scale,
-                self.bits_scale,
-                self.bits_scale,
-                self.bits_scale,
-                self.bits_scale,
-                self.bits_scale,
-                31,
-            ],
-        )
+        self.coeff_mod_bit_sizes = [
+            31,
+            self.bits_scale,
+            self.bits_scale,
+            self.bits_scale,
+            self.bits_scale,
+            self.bits_scale,
+            self.bits_scale,
+            31,
+        ]
         self.enc_context = ts.context(
             ts.SCHEME_TYPE.CKKS,
             poly_modulus_degree=self.poly_modulus_degree,
@@ -327,18 +323,16 @@ class FHEOlindaNetOne(pl.LightningModule):
         # Encryption context
         self.bits_scale = 26
         self.poly_modulus_degree = 8192
-        self.coeff_mod_bit_sizes = (
-            [
-                31,
-                self.bits_scale,
-                self.bits_scale,
-                self.bits_scale,
-                self.bits_scale,
-                self.bits_scale,
-                self.bits_scale,
-                31,
-            ],
-        )
+        self.coeff_mod_bit_sizes = [
+            31,
+            self.bits_scale,
+            self.bits_scale,
+            self.bits_scale,
+            self.bits_scale,
+            self.bits_scale,
+            self.bits_scale,
+            31,
+        ]
         self.enc_context = ts.context(
             ts.SCHEME_TYPE.CKKS,
             poly_modulus_degree=self.poly_modulus_degree,
