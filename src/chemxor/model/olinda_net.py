@@ -195,10 +195,6 @@ class OlindaNet(pl.LightningModule):
         x = softplus_polyval(x)
         x = self.conv2(x)
         x = softplus_polyval(x)
-        x = self.conv3(x)
-        x = softplus_polyval(x)
-        x = self.conv4(x)
-        x = softplus_polyval(x)
 
         # flattening while keeping the batch axis
         x = x.view(x.shape[0], -1)
