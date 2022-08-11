@@ -1,6 +1,7 @@
 """Chemxor CLI."""
 
 from pathlib import Path
+from typing import Optional
 
 import click
 
@@ -18,10 +19,10 @@ from .. import __version__
 
 
 @click.command()
-@click.argument("model", type=click.Choice(["olinda, olinda_zero, olinda_one"]))
-@click.option("--cp", "--checkpoint", type=click.Path(exists=True))
-@click.option("--o", "--output", default=1)
-def serve(model: str, checkpoint: Path, output: int) -> None:
+@click.argument("model", type=click.Choice(["olinda", "olinda_zero", "olinda_one"]))
+@click.option("-cp", "--checkpoint", type=click.Path(exists=True))
+@click.option("-o", "--output", default=1)
+def serve(model: str, checkpoint: Optional[Path], output: int) -> None:
     """Serve models."""
     if model == "olinda":
         model = OlindaNet(output=output)

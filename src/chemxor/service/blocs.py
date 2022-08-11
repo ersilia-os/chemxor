@@ -21,15 +21,14 @@ from chemxor.schema.fhe_model import (
 def process_fhe_model_query(
     query: PartFHEModelQueryPostRequest,
     model: Union[nn.Module, LightningModule],
-    step: int,
 ) -> Any:
     """Evaluate fhe model."""
     # Parse context from request
-    context = ts.context_from(bytes.fromhex(query.context))
+    context = ts.context_from(bytes.fromhex(query.ts_context))
 
     # convert enc input to enc vector
     enc_input = ts.ckks_vector_from(context, bytes.fromhex(query.model_input))
-    return model(enc_input, step)
+    return model(enc_input, query.model_step)
 
 
 def generate_blueprint(
@@ -68,16 +67,16 @@ def generate_blueprint(
             response_body = PartFHEModelQueryPostResponse()
             return make_response(response_body.json(), HTTPStatus.INTERNAL_SERVER_ERROR)
 
-        enc_output_tensor = process_fhe_model_query(part_net, model_query_request)
+        enc_output_tensor = process_fhe_model_query(model_query_request, part_net)
 
         # determine next step
         next_step = (
             (model_query_request.model_step + 1)
-            if (model_query_request.model_step + 1) <= len(part_net)
+            if (model_query_request.model_step + 1) <= part_net.steps
             else None
         )
         response_body = PartFHEModelQueryPostResponse(
-            output_tensor=enc_output_tensor.serialize().hex(),
+            model_output=enc_output_tensor.serialize().hex(),
             next_step=next_step,
             preprocess_next_args=part_net.pre_process[model_query_request.model_step],
         )
@@ -95,7 +94,7 @@ def generate_blueprint(
                 model_name=str(part_net),
                 model_steps=part_net.steps,
                 context_params=ModelContextParams(
-                    bit_scale=part_net.bit_scale,
+                    bit_scale=part_net.bits_scale,
                     poly_modulus_degree=part_net.poly_modulus_degree,
                     coeff_mod_bit_sizes=part_net.coeff_mod_bit_sizes,
                 ),

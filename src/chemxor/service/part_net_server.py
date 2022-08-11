@@ -19,7 +19,7 @@ class PartitionNetServer:
     ) -> None:
         """Init."""
         self.part_net = part_net
-        self.flask_app = flask_app or Flask()
+        self.flask_app = flask_app or Flask(str(part_net))
         self.flask_bp = generate_blueprint(self.part_net)
         self.flask_app.register_blueprint(self.flask_bp)
 

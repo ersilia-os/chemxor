@@ -6,6 +6,7 @@ from typing import Any
 from pydantic import parse_obj_as
 import requests
 import tenseal as ts
+from tqdm import tqdm
 
 from chemxor.schema.fhe_model import (
     ModelInfo,
@@ -27,7 +28,7 @@ class PartitionNetClient:
         """
         self.model_url = url
         self.model_info = self.retrieve_model_info(url)
-        self.enc_context = self.create_ts_context_from_model()
+        self.enc_context = self.create_ts_context_from_model(self.model_info)
         self.public_context = self.enc_context.copy()
         self.public_context.make_context_public()
 
@@ -70,21 +71,24 @@ class PartitionNetClient:
             Any: Model output
         """
         output = smiles_to_imcol(x, self.enc_context)
-        for step in range(self.model_info.steps + 1):
+        for step in tqdm(range(self.model_info.model_steps + 1)):
             request = PartFHEModelQueryPostRequest(
                 ts_context=self.public_context.serialize().hex(),
-                model_input=output,
+                model_input=output.serialize().hex(),
                 model_step=step,
             )
             response = requests.post(self.model_url, json=request.json())
-            response = parse_obj_as(
-                PartFHEModelQueryPostResponse, json.loads(response.content)
-            )
-            output = ts.ckks_vector_from(
-                self.enc_context, bytes.fromhex(response.model_output)
-            )
-            dec_out = output.decrypt()
-            output = prepare_fhe_input(
-                dec_out, response.preprocess_next_args, self.enc_context
-            )
+            if response.status_code == 200:
+                response = parse_obj_as(
+                    PartFHEModelQueryPostResponse, json.loads(response.content)
+                )
+                output = ts.ckks_vector_from(
+                    self.enc_context, bytes.fromhex(response.model_output)
+                )
+                dec_out = output.decrypt()
+                output = prepare_fhe_input(
+                    dec_out, response.preprocess_next_args, self.enc_context
+                )
+            else:
+                raise Exception("Query Failed!")
         return output.decrypt()
