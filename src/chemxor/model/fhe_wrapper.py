@@ -38,10 +38,11 @@ class FHEOlindaNetZero(pl.LightningModule):
         self.fc3_bias = model.fc3.bias.data.tolist()
 
         # Prepare parameters
-        self.steps = 1
+        self.steps = 2
         self.conv1_windows_nb = 100
         self.pre_process = [
             [(PreProcessInput.RESHAPE, [3200]), (PreProcessInput.RE_ENCRYPT, [])],
+            [(PreProcessInput.RE_ENCRYPT, [])],
             [(PreProcessInput.PASSTHROUGH, [])],
         ]
 
@@ -97,8 +98,10 @@ class FHEOlindaNetZero(pl.LightningModule):
             # fc2 layer
             enc_x = enc_x.mm(self.fc2_weight) + self.fc2_bias
             enc_x = softplus_polyval(enc_x)
+            return enc_x
+        elif step == 2:
             # fc3 layer
-            enc_x = enc_x.mm(self.fc3_weight) + self.fc3_bias
+            enc_x = x.mm(self.fc3_weight) + self.fc3_bias
             return enc_x
 
 
