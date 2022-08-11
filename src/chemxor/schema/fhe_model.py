@@ -47,7 +47,7 @@ class ModelContextParams(BaseModel):
 
     bit_scale: int
     poly_modulus_degree: int
-    coeff_mod_bit_sizes: List[int]
+    coeff_mod_bit_sizes: Tuple[List[int]]
 
 
 class ModelInfo(BaseModel):
