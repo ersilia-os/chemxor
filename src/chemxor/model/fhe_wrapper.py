@@ -43,7 +43,7 @@ class FHEOlindaNetZero(pl.LightningModule):
         self.pre_process = [
             [(PreProcessInput.RESHAPE, [3200]), (PreProcessInput.RE_ENCRYPT, [])],
             [(PreProcessInput.RE_ENCRYPT, [])],
-            [(PreProcessInput.PASSTHROUGH, [])],
+            [(PreProcessInput.RE_ENCRYPT, [])],
         ]
 
         # Encryption context
@@ -155,7 +155,7 @@ class FHEOlindaNet(pl.LightningModule):
             ],
             [(PreProcessInput.RESHAPE, [2048]), (PreProcessInput.RE_ENCRYPT, [])],
             [(PreProcessInput.RE_ENCRYPT, [])],
-            [(PreProcessInput.PASSTHROUGH, [])],
+            [(PreProcessInput.RE_ENCRYPT, [])],
         ]
 
         # Encryption context
@@ -313,7 +313,7 @@ class FHEOlindaNetOne(pl.LightningModule):
             ],
             [(PreProcessInput.RESHAPE, [(1024)]), (PreProcessInput.RE_ENCRYPT, [])],
             [(PreProcessInput.RE_ENCRYPT, [])],
-            [(PreProcessInput.PASSTHROUGH, [])],
+            [(PreProcessInput.RE_ENCRYPT, [])],
         ]
 
         # Encryption context
