@@ -1,7 +1,7 @@
 """FHE Encrypted model API schema."""
 
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
@@ -39,4 +39,26 @@ class PartFHEModelQueryPostResponse(FHEModelQueryPostResponse):
 
     next_step: int
     preprocess_next_input: List[PreProcessInput] = []
-    preprocess_next_args: List[List] = [[]]
+    preprocess_next_args: List[Tuple[PreProcessInput, List]]
+
+
+class ModelContextParams(BaseModel):
+    """Model tenseal context parameters."""
+
+    bit_scale: int
+    poly_modulus_degree: int
+    coeff_mod_bit_sizes: List[int]
+
+
+class ModelInfo(BaseModel):
+    """Model info container."""
+
+    model_name: str
+    model_steps: int
+    context_params: ModelContextParams
+
+
+class PartFHEModelQueryGetResponse(BaseModel):
+    """Partitioned FHE Encrypted model query get response schema."""
+
+    model_info: ModelInfo
