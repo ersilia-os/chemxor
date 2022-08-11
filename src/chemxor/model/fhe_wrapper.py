@@ -21,6 +21,7 @@ class FHEOlindaNetZero(pl.LightningModule):
 
         # Prepare layers
         self.conv1_weight = model.conv1.weight.data.view(
+            model.conv1.in_channels,
             model.conv1.out_channels,
             model.conv1.kernel_size[0],
             model.conv1.kernel_size[1],
@@ -112,6 +113,7 @@ class FHEOlindaNet(pl.LightningModule):
 
         # Prepare layers
         self.conv1_weight = model.conv1.weight.data.view(
+            model.conv1.in_channels,
             model.conv1.out_channels,
             model.conv1.kernel_size[0],
             model.conv1.kernel_size[1],
@@ -119,6 +121,7 @@ class FHEOlindaNet(pl.LightningModule):
         self.conv1_bias = model.conv1.bias.data.tolist()
 
         self.conv2_weight = model.conv2.weight.data.view(
+            model.conv1.in_channels,
             model.conv2.out_channels,
             model.conv2.kernel_size[0],
             model.conv2.kernel_size[1],
