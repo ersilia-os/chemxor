@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, List, Tuple, Union
 
 import tenseal as ts
+import torch as t
 
 from chemxor.schema.fhe_model import PreProcessInput
 
@@ -18,13 +19,15 @@ def get_project_root_path() -> Path:
 
 
 def prepare_fhe_input(
-    model_output: List, pre_processor: Tuple[PreProcessInput, List], context: ts.Context
+    model_output: List,
+    pre_processors: List[Tuple[PreProcessInput, List]],
+    context: ts.Context,
 ) -> Union[ts.CKKSTensor, ts.CKKSVector]:
     """Prepare input for next step.
 
     Args:
         model_output (List): Decrypted model ouput to prepare as an input for next step.
-        pre_processor (PreProcessInput): Input pre processor to use
+        pre_processors (List[Tuple[PreProcessInput, List]]): List of Input pre processor to use
         context (ts.Context): Tenseal encryption context
 
     Raises:
@@ -33,14 +36,23 @@ def prepare_fhe_input(
     Returns:
         Union[ts.CKKSTensor, ts.CKKSVector]: Prepared input
     """
-    if pre_processor[0] == PreProcessInput.IM_TO_COL:
-        return ts.im2col_encoding(context, model_output, *pre_processor[1])
-    elif pre_processor[0] == PreProcessInput.RE_ENCRYPT:
-        return ts.ckks_vector(model_output, context)
-    elif pre_processor[0] == PreProcessInput.PASSTHROUGH:
-        return model_output
-    else:
-        raise NotImplementedError
+    model_output
+    for pre_processor in pre_processors:
+        if pre_processor[0] == PreProcessInput.IM_TO_COL:
+            image_list = []
+            for channel in model_output:
+                out, _ = ts.im2col_encoding(context, channel, *pre_processor[1])
+                image_list.append(out)
+            model_output = image_list
+        elif pre_processor[0] == PreProcessInput.RE_ENCRYPT:
+            model_output = ts.ckks_vector(context, model_output)
+        elif pre_processor[0] == PreProcessInput.RESHAPE:
+            model_output = t.tensor(model_output).view(pre_processor[1][0]).tolist()
+        elif pre_processor[0] == PreProcessInput.PASSTHROUGH:
+            model_output = model_output
+        else:
+            raise NotImplementedError
+    return model_output
 
 
 def evaluate_fhe_model(model: Any, enc_sample: Any, decrypt: bool = False) -> List:
