@@ -38,7 +38,6 @@ class PartFHEModelQueryPostResponse(FHEModelQueryPostResponse):
     """Partitioned FHE Encrypted model query post response schema."""
 
     next_step: int
-    preprocess_next_input: List[PreProcessInput] = []
     preprocess_next_args: List[Tuple[PreProcessInput, List]]
 
 
@@ -47,7 +46,7 @@ class ModelContextParams(BaseModel):
 
     bit_scale: int
     poly_modulus_degree: int
-    coeff_mod_bit_sizes: Tuple[List[int]]
+    coeff_mod_bit_sizes: List[int]
 
 
 class ModelInfo(BaseModel):
