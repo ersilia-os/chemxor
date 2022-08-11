@@ -189,8 +189,8 @@ class OlindaRDataModule(pl.LightningDataModule):
         enc_csv_train = EncConvDataset(
             context,
             self.enc_csv_train,
-            self.model.conv1.kernel_size,
-            self.model.conv1.stride[0],
+            self.model._model.conv1.kernel_size,
+            self.model._model.conv1.stride[0],
             (32, 32),
         )
         return DataLoader(enc_csv_train, batch_size=None)
@@ -217,8 +217,8 @@ class OlindaRDataModule(pl.LightningDataModule):
         enc_csv_val = EncConvDataset(
             context,
             self.enc_csv_val,
-            self.model.conv1.kernel_size,
-            self.model.conv1.stride[0],
+            self.model._model.conv1.kernel_size,
+            self.model._model.conv1.stride[0],
             (32, 32),
         )
         return DataLoader(enc_csv_val, batch_size=None)
@@ -245,8 +245,8 @@ class OlindaRDataModule(pl.LightningDataModule):
         enc_csv_test = EncConvDataset(
             context,
             self.enc_csv_test,
-            self.model.conv1.kernel_size,
-            self.model.conv1.stride[0],
+            self.model._model.conv1.kernel_size,
+            self.model._model.conv1.stride[0],
             (32, 32),
         )
         return DataLoader(enc_csv_test, batch_size=None)
@@ -273,8 +273,8 @@ class OlindaRDataModule(pl.LightningDataModule):
         enc_csv_predict = EncConvDataset(
             context,
             self.enc_csv_predict,
-            self.model.conv1.kernel_size,
-            self.model.conv1.stride[0],
+            self.model._model.conv1.kernel_size,
+            self.model._model.conv1.stride[0],
             (32, 32),
         )
         return DataLoader(enc_csv_predict, batch_size=None)
