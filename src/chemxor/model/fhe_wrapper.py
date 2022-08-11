@@ -17,6 +17,8 @@ class FHEOlindaNetZero(pl.LightningModule):
         """Init."""
         super().__init__()
 
+        self._model = model
+
         # Prepare layers
         self.conv1_weight = model.conv1.weight.data.view(
             model.conv1.out_channels,
