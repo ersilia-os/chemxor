@@ -153,7 +153,7 @@ class FHEOlindaNet(pl.LightningModule):
                 (PreProcessInput.RESHAPE, [(32, 10, 10)]),
                 (PreProcessInput.IM_TO_COL, [3, 3, 1]),
             ],
-            [(PreProcessInput.RESHAPE, [3200]), (PreProcessInput.RE_ENCRYPT, [])],
+            [(PreProcessInput.RESHAPE, [2048]), (PreProcessInput.RE_ENCRYPT, [])],
             [(PreProcessInput.RE_ENCRYPT, [])],
             [(PreProcessInput.PASSTHROUGH, [])],
         ]
