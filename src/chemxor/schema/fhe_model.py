@@ -11,6 +11,7 @@ class PreProcessInput(Enum):
 
     IM_TO_COL = "im_to_col"
     RE_ENCRYPT = "re_encrypt"
+    RESHAPE = "reshape"
     PASSTHROUGH = "passthrough"
 
 
