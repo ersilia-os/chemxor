@@ -16,12 +16,10 @@ from torch.utils.data import DataLoader, Dataset, random_split
 
 from chemxor.data.enc_conv_dataset import EncConvDataset
 from chemxor.model import OlindaNet, OlindaNetOne, OlindaNetZero
-from chemxor.utils import get_project_root_path
+from chemxor.utils import get_package_root_path
 
-project_root_path = get_project_root_path()
-default_path = project_root_path.joinpath(
-    "data/01_raw/ModelPreds/eos2r5a/ersilia_output.csv"
-)
+package_root_path = get_package_root_path()
+default_path = package_root_path.joinpath("ersilia_output_slim.csv")
 
 
 class OlindaRDataset(Dataset):
@@ -47,7 +45,7 @@ class OlindaRDataset(Dataset):
         self.target_transform = target_transform
         # load the transformer
         self.grid_transformer = joblib.load(
-            project_root_path.joinpath("data/06_models/grid_transformer.joblib")
+            package_root_path.joinpath("grid_transformer.joblib")
         )
 
     def __len__(self: "OlindaRDataset") -> int:

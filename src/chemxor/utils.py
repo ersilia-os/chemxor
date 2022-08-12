@@ -22,6 +22,15 @@ def get_project_root_path() -> Path:
     return Path(__file__).parents[2].absolute()
 
 
+def get_package_root_path() -> Path:
+    """Get path of the package root.
+
+    Returns:
+        Path: Package root path
+    """
+    return Path(__file__).parents[0].absolute()
+
+
 def prepare_fhe_input(
     model_output: List,
     pre_processors: List[Tuple[PreProcessInput, List]],
@@ -92,9 +101,9 @@ def smiles_to_imcol(x: str, context: ts.Context) -> Any:
         Any: Transformed encrypted input
     """
     # Load grid transformer
-    project_root_path = get_project_root_path()
+    package_root_path = get_package_root_path()
     grid_transformer = joblib.load(
-        project_root_path.joinpath("data/06_models/grid_transformer.joblib")
+        package_root_path.joinpath("grid_transformer.joblib")
     )
     # Create molecule figerprints
     molecule_fp = AllChem.GetMorganFingerprint(

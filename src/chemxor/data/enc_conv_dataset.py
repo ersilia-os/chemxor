@@ -15,7 +15,7 @@ class EncConvDataset(Dataset):
         dataset: Dataset,
         kernel_shape: tuple,
         stride: int,
-        input_shape: tuple = (28, 28),
+        input_shape: tuple = (32, 32),
     ) -> None:
         """Encrypted dataset.
 
@@ -24,7 +24,7 @@ class EncConvDataset(Dataset):
             dataset (Dataset): Initialized dataset class to wrap.
             kernel_shape (tuple): Shape of the convolution kernel.
             stride (int): Stride length.
-            input_shape (tuple): Shape of the input image. Defaults to (28, 28).
+            input_shape (tuple): Shape of the input image. Defaults to (32, 32).
 
         """
         self.context = context

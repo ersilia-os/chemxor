@@ -1,10 +1,14 @@
 [tool.poetry]
 name = "chemxor"
-version = "0.2.0"
+version = "0.6.0"
 description = "Privacy Preserving AI/ML for Drug Discovery"
 authors = ["Ankur Kumar <ank@leoank.me>"]
 license = "GPLv3"
 readme = "./README.md"
+include = [
+    "./src/chemxor/grid_transformer.joblib",
+    "./src/chemxor/ersilia_output_slim.csv",
+]
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.9"

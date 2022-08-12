@@ -11,8 +11,10 @@ from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
 from torchvision.datasets import MNIST
 
-from chemxor.data_modules.enc_conv_dataset import EncConvDataset
-from chemxor.utils import get_project_root_path
+from chemxor.data.enc_conv_dataset import EncConvDataset
+from chemxor.utils import get_package_root_path
+
+package_root_path = get_package_root_path()
 
 
 # Adapted from https://pytorch-lightning.readthedocs.io/en/stable/extensions/datamodules.html#datamodules
@@ -21,9 +23,7 @@ class MNISTDataModule(pl.LightningDataModule):
 
     def __init__(
         self: "MNISTDataModule",
-        data_dir: Path = get_project_root_path().joinpath(  # noqa B008
-            "data/01_raw/mnist"
-        ),
+        data_dir: Path = package_root_path,
         batch_size: int = 32,
         transform: Optional[Any] = transforms.Compose(  # noqa: B008
             [
@@ -38,7 +38,7 @@ class MNISTDataModule(pl.LightningDataModule):
 
         Args:
             data_dir (Path): Data directory.
-                Defaults to get_project_root_path().joinpath("data/01_raw/mnist").
+                Defaults to package_root_path.
             batch_size (int): batch size. Defaults to 32.
             transform (Optional[Any]): Tranforms for the inputs.
                 Defaults to transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])

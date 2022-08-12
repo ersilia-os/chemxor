@@ -16,6 +16,10 @@ ChemXor is an open source library thta provides a set of pre-tuned model archite
 
 Using FHE, one can compute on encrypted data, without learning anything about the data. This enables novel privacy preserving interactions between actors in the context of machine learning.
 
+## Tutorials
+
+Look at the notebook directory for tutorials
+
 ## Getting Started
 
 Chemxor is available on PyPi and can be installed using pip.
@@ -45,7 +49,7 @@ The model is a normal Pytorch Lightning module which is compatible with Pytorch 
 
 ### Dataset Preparation
 
-ChemXor provides two generic Pytorch Lightning Datamodules (Regression, Classification) that can be used to train and evaluate the models. These Datamodules expects raw data as CSV files with two columns (SMILES, target).
+ChemXor provides two generic Pytorch Lightning Datamodules (Regression, Classification) that can be used to train and evaluate the models. These Datamodules expects raw data as CSV files with two columns (target, SMILES).
 
 ```python
 from chemxor.data import OlindaCDataModule, OlindaRDataModule
@@ -110,7 +114,7 @@ from chemxor.utils import prepare_fhe_input
 output = enc_sample
 for step in range(fhe_model.steps):
     output = fhe_model(output, step)
-    dec_out = output.decrypt().tolist()
+    dec_out = output.decrypt()
     output = prepare_fhe_input(
                     dec_out,
                     fhe_model.pre_process[step],
@@ -118,7 +122,7 @@ for step in range(fhe_model.steps):
                 )
 
 # final decryted output
-decrypted_output = output.decrypt().tolist()
+decrypted_output = output.decrypt()
 ```
 
 This process can automated using a utility function provided by ChemXor
@@ -142,10 +146,16 @@ if __name__ == "__main__":
     fhe_model_server.run()
 ```
 
+ChemXor's Pre defined Models can also be served using the CLI
+
+```bash
+chemxor serve olida|olinda_zero|olinda_one 
+```
+
 ### Query models
 
 ```bash
-chemxor query -i [input file path] [model url]
+chemxor query [model url] [molecule SMILES] 
 ```
 
 ## Developing
