@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "chemxor"
-version = "0.6.0"
+version = "0.7.0"
 description = "Privacy Preserving AI/ML for Drug Discovery"
 authors = ["Ankur Kumar <ank@leoank.me>"]
 license = "GPLv3"
@@ -23,6 +23,7 @@ Flask = "^2.1.2"
 protobuf = "3.19.1"
 regex = "2022.7.9"
 feather-format = "^0.4.1"
+griddify = "^0.0.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.1"
