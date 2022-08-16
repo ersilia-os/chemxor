@@ -1,7 +1,7 @@
 """FHE Encrypted model API schema."""
 
 from enum import Enum
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 from pydantic import BaseModel, Field
 
@@ -19,7 +19,7 @@ class FHEModelQueryPostRequest(BaseModel):
     """FHE Encrypted model query post request schema."""
 
     ts_context: str = Field(unicode_safe=False)
-    model_input: str = Field(unicode_safe=False)
+    model_input: Union[List[str], str] = Field(unicode_safe=False)
 
 
 class FHEModelQueryPostResponse(BaseModel):

@@ -1,7 +1,7 @@
 """Partitioned Network Client."""
 
 import json
-from typing import Any
+from typing import Any, List
 
 from pydantic import parse_obj_as
 import requests
@@ -67,14 +67,23 @@ class PartitionNetClient:
         Args:
             x (str): SMILES string
 
+        Raises:
+            Exception: Failed Query
+
         Returns:
             Any: Model output
         """
         output = smiles_to_imcol(x, self.enc_context)
         for step in tqdm(range(self.model_info.model_steps + 1)):
+            if type(output) is List:
+                serialized_output = []
+                for elem in output:
+                    serialized_output.append(elem.serialize().hex())
+            else:
+                serialized_output = output.serialize().hex()
             request = PartFHEModelQueryPostRequest(
                 ts_context=self.public_context.serialize().hex(),
-                model_input=output.serialize().hex(),
+                model_input=serialized_output,
                 model_step=step,
             )
             response = requests.post(self.model_url, json=request.json())
