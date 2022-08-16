@@ -1,7 +1,7 @@
 """Reusable BLoCs."""
 
 from http import HTTPStatus
-from typing import Any, List, Union
+from typing import Any, Union
 
 from flask import Blueprint, make_response, request, Response
 from pydantic import parse_raw_as, ValidationError
@@ -27,7 +27,7 @@ def process_fhe_model_query(
     context = ts.context_from(bytes.fromhex(query.ts_context))
 
     # convert enc input to enc vector
-    if type(query.model_input) is List:
+    if type(query.model_input) is list:
         enc_input = []
         for elem in query.model_input:
             enc_input.append(ts.ckks_vector_from(context, bytes.fromhex(elem)))

@@ -1,7 +1,7 @@
 """Partitioned Network Client."""
 
 import json
-from typing import Any, List
+from typing import Any
 
 from pydantic import parse_obj_as
 import requests
@@ -75,7 +75,7 @@ class PartitionNetClient:
         """
         output = smiles_to_imcol(x, self.enc_context)
         for step in tqdm(range(self.model_info.model_steps + 1)):
-            if type(output) is List:
+            if type(output) is list:
                 serialized_output = []
                 for elem in output:
                     serialized_output.append(elem.serialize().hex())
