@@ -6,7 +6,7 @@ Privacy Preserving AI/ML for Drug Discovery
 
 ## Overview
 
-ChemXor is an open source library thta provides a set of pre-tuned model architectures for evaluating FHE(Fully homomorphic encryption) encrypted inputs. These models can be trained as normal Pytorch models. It also provides convenient functions to quickly query and host these models as a service with strong privacy guarantees for the end-user. It is built on top of TenSEAL and Pytorch.
+ChemXor is an open source library that provides a set of pre-tuned model architectures for evaluating FHE(Fully homomorphic encryption) encrypted inputs. These models can be trained as normal Pytorch models. It also provides convenient functions to quickly query and host these models as a service with strong privacy guarantees for the end-user. It is built on top of TenSEAL and Pytorch.
 
 ### What is Fully Homomorphic Encryption (FHE)?
 
