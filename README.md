@@ -111,7 +111,7 @@ Also, the FHE models are partitioned to control multiplicative depth. So, the fo
 ```python
 from chemxor.utils import prepare_fhe_input
 
-output = enc_sample
+output = enc_sample[0]
 for step in range(fhe_model.steps):
     output = fhe_model(output, step)
     dec_out = output.decrypt()
@@ -130,7 +130,7 @@ This process can automated using a utility function provided by ChemXor
 ```python
 from chemxor.utils import evaluate_fhe_model
 
-decrypted_output = evaluate_fhe_model(fhe_model, enc_sample, decrypt = True)
+decrypted_output = evaluate_fhe_model(fhe_model, enc_sample[0], decrypt = True)
 ```
 
 ### Serve models
