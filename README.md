@@ -22,10 +22,19 @@ Look at the notebook directory for tutorials
 
 ## Getting Started
 
-Chemxor is available on PyPi and can be installed using pip.
+Create a conda environment
 
 ```bash
-pip install chemxor
+conda create -n chemxor python=3.9
+conda activate chemxor
+```
+
+Clone the ChemXor repository and install it
+
+```bash
+git clone https://github.com/ersilia-os/chemxor.git
+cd chemxor
+python -m pip install -e .
 ```
 
 ### Model selection
@@ -43,13 +52,16 @@ from chemxor.models import OlindaNetZero, OlindaNetOne, OlindaNet
 
 # model for regression
 model = OlindaNetZero(output = 1)
+
+# model for classification
+model = OlindaNetZero(output = 2)
 ```
 
 The model is a normal Pytorch Lightning module which is compatible with Pytorch NN module.
 
 ### Dataset Preparation
 
-ChemXor provides two generic Pytorch Lightning Datamodules (Regression, Classification) that can be used to train and evaluate the models. These Datamodules expects raw data as CSV files with two columns (target, SMILES).
+ChemXor provides two generic Pytorch Lightning Datamodules (Regression, Classification) that can be used to train and evaluate the models. These Datamodules expects raw data as CSV files with two columns in the following order: value, SMILES
 
 ```python
 from chemxor.data import OlindaCDataModule, OlindaRDataModule
@@ -57,7 +69,7 @@ from chemxor.data import OlindaCDataModule, OlindaRDataModule
 dm_regression = OlindaRDataModule(csv_path="path/to/csv")
 
 # Use the threshold value to automatically create categorical 
-# classes from the target column of the CSV
+# classes from the value column of the CSV
 dm_classification = OlindaCDataModule(csv_path="path/to/csv", threshold=[0.5])
 ```
 
@@ -79,6 +91,14 @@ checkpoint_callback = pl.callbacks.ModelCheckpoint(
 trainer = pl.Trainer(callbacks=[checkpoint_callback], accelerator="auto")
 trainer.fit(model=model, datamodule=data_module)
 ```
+
+The model performance can be evaluated using TensorBoard
+
+```
+# on the CLI, point towards the logs folder
+tensorboard --logdir lightning_logs/version_1 
+```
+
 
 ### FHE models
 
@@ -165,6 +185,15 @@ We use poetry to manage project dependecies. Use poetry to install project in ed
 ```bash
 poetry install
 ```
+
+## Funding 
+This project has been supported by a Biopharma Speed Grant from Merck KGaA.
+
+
+## About
+The [Ersilia Open Source Initiative](https://ersilia.io) is a Non Profit Organization (1192266) with the mission is to equip labs, universities and clinics in LMIC with AI/ML tools for infectious disease research.
+
+[Help us](https://ersilia.io/model-hub) achieve our mission!
 
 ## License
 

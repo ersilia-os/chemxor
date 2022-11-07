@@ -2,7 +2,7 @@
 name = "chemxor"
 version = "0.9.0"
 description = "Privacy Preserving AI/ML for Drug Discovery"
-authors = ["Ankur Kumar <ank@leoank.me>"]
+authors = ["Ersilia Open Source Initiative <hello@ersilia.io>","Ankur Kumar <ank@leoank.me>"]
 license = "GPLv3"
 readme = "./README.md"
 include = [
@@ -11,7 +11,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.9"
+python = ">=3.8"
 pydantic = { extras = ["dotenv"], version = "^1.8.2" }
 logzero = "^1.7.0"
 torch = { extras = ["cpu"], version = "^1.10.0" }

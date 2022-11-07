@@ -105,7 +105,6 @@ class OlindaNetZero(pl.LightningModule):
         x, y = batch
         output = self(x)
         loss = self.criterion(output, y)
-
         # Logging to TensorBoard by default
         self.log("VAL_Loss", loss)
 

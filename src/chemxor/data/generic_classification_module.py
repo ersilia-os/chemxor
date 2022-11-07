@@ -42,7 +42,7 @@ class OlindaCDataset(Dataset):
             target_transform (Optional[Any]): Transforms for the target. Defaults to None.
 
         """
-        self.df_full = pd.read_csv(csv_path.absolute())
+        self.df_full = pd.read_csv(Path(csv_path).absolute())
         self.threshold = threshold
         self.transform = transform
         self.target_transform = target_transform
@@ -73,7 +73,6 @@ class OlindaCDataset(Dataset):
 
         # Extract label
         label = float(self.df_full.iloc[index][0])
-
         # One-hot encoding
         one_hot_tensor = t.zeros((len(self.threshold) + 1))
         for i, value in enumerate(self.threshold):

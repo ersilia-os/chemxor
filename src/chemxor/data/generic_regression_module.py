@@ -40,7 +40,7 @@ class OlindaRDataset(Dataset):
             target_transform (Optional[Any]): Transforms for the target. Defaults to None.
 
         """
-        self.df_full = pd.read_csv(csv_path.absolute())
+        self.df_full = pd.read_csv(Path(csv_path).absolute())
         self.transform = transform
         self.target_transform = target_transform
         # load the transformer
