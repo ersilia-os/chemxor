@@ -1,4 +1,4 @@
-# ChemXor
+# ChemXor privacy preserving ML
 
 Privacy Preserving AI/ML for Drug Discovery
 
